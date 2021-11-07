@@ -10,7 +10,7 @@ if (!context) {
 	throw new Error('Got a null context from the canvas.');
 }
 
-const particles = Array<Particle>(300);
+const particles = Array<Particle>(500);
 for (let i = 0; i < particles.length; i++) {
 	particles[i] = new Particle(
 		canvas.width * Math.random(),
@@ -18,6 +18,16 @@ for (let i = 0; i < particles.length; i++) {
 		`rgb(${Math.random()*255}, ${Math.random()*255}, ${Math.random()*255})`,
 	);
 }
+
+let lastTick = +new Date();
+setInterval(() => {
+	const thisTick = +new Date();
+	const elapsed = thisTick - lastTick;
+	for (let i = 0; i < particles.length; i++) {
+		particles[i].tick(particles, elapsed);
+	}
+	lastTick = thisTick;
+}, 1000 / 30);
 
 setInterval(() => {
 	context.clearRect(0, 0, canvas.width, canvas.height);
@@ -27,7 +37,7 @@ setInterval(() => {
 		context.arc(
 			particles[i].x,
 			particles[i].y,
-			Particle.size,
+			Particle.radius,
 			0,
 			2 * Math.PI,
 		);
