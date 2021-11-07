@@ -2,16 +2,14 @@ export class Particle {
 	static physicalRadius = 5;
 	static displayRadius = 5;
 
-	static physicalPerimeter = Particle.physicalRadius * 2;
-
-	static constantSpeed = 1; // pixels per second
+	static constantSpeed = 1; // pixels per second? TODO
 
 	public x: number;
 	public y: number;
 	public style: string;
 	public direction: number;
-	public velocity: number;
-	public decelerationRate: number
+	public velocityPerSecond: number;
+	public decelerationRatePerSecond: number;
 	public isMoving: boolean;
 
 	constructor(x: number, y: number) {
@@ -19,24 +17,26 @@ export class Particle {
 		this.y = y;
 		this.style = `rgb(${Math.random()*255}, ${Math.random()*255}, ${Math.random()*255})`;
 		this.direction = 0;
-		this.velocity = 0;
-		this.decelerationRate = 0.3;
+		this.velocityPerSecond = 0;
+		this.decelerationRatePerSecond = 1; // per second
 		this.isMoving = true;
 	}
 
-	tick(particles: Particle[], elapsed: number) {
+	tick(particles: Particle[], elapsedSeconds: number) {
 		if (this.isMoving) {
-			this.move(elapsed);
+			this.velocityPerSecond *= 1 - (this.decelerationRatePerSecond * elapsedSeconds);
+			if (this.velocityPerSecond < 0.01) {
+				// Otherwise we can never not be moving
+				this.velocityPerSecond = 0;
+			}
 
-			this.direction = 0;
-			this.velocity *= (1 - this.decelerationRate);
-
+			this.move(elapsedSeconds);
 			this.computeCollisions(particles);
 		}
 	}
 
-	private move(elapsed: number) {
-		const delta = this.velocity * (elapsed / 1000);
+	private move(elapsedSeconds: number) {
+		const delta = this.velocityPerSecond * elapsedSeconds;
 		this.x += delta * Math.cos(this.direction);
 		this.y += delta * Math.sin(this.direction);
 	}
@@ -56,15 +56,16 @@ export class Particle {
 			// TODO merge multiple directions if there are multiple collisions
 			this.direction = Math.atan2(this.y - particle.y, this.x - particle.x);
 			// TODO have a proper, non-constant speed
-			this.velocity += Particle.constantSpeed;
+			this.velocityPerSecond += Particle.constantSpeed;
 
 			hasMoved = true;
 			particle.isMoving = true;
 		}
 
-		this.isMoving = hasMoved;
+		this.isMoving = hasMoved || this.velocityPerSecond > 0;
 	}
 
+	static physicalPerimeter = Particle.physicalRadius * 2;
 	private doesCollide(particle: Particle): boolean {
 		const deltaX = this.x - particle.x;
 		const deltaY = this.y - particle.y;

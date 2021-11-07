@@ -10,6 +10,7 @@ if (!context) {
 	throw new Error('Got a null context from the canvas.');
 }
 
+// TODO partition the space to optimize performance
 const particles = Array<Particle>(2000);
 for (let i = 0; i < particles.length; i++) {
 	particles[i] = new Particle(
@@ -22,9 +23,9 @@ for (let i = 0; i < particles.length; i++) {
 let lastTick = +new Date();
 setInterval(() => {
 	const thisTick = +new Date();
-	const elapsed = thisTick - lastTick;
+	const elapsedSeconds = (thisTick - lastTick) / 1000;
 	for (let i = 0; i < particles.length; i++) {
-		particles[i].tick(particles, elapsed);
+		particles[i].tick(particles, elapsedSeconds);
 	}
 	lastTick = thisTick;
 }, 1000 / 30);
