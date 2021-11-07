@@ -10,7 +10,7 @@ if (!context) {
 	throw new Error('Got a null context from the canvas.');
 }
 
-const particles = Array<Particle>(500);
+const particles = Array<Particle>(2000);
 for (let i = 0; i < particles.length; i++) {
 	particles[i] = new Particle(
 		canvas.width * Math.random(),
@@ -36,7 +36,7 @@ setInterval(() => {
 		context.arc(
 			particles[i].x,
 			particles[i].y,
-			Particle.radius,
+			Particle.displayRadius,
 			0,
 			2 * Math.PI,
 		);
