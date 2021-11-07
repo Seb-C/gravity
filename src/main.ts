@@ -15,7 +15,6 @@ for (let i = 0; i < particles.length; i++) {
 	particles[i] = new Particle(
 		canvas.width * Math.random(),
 		canvas.height * Math.random(),
-		`rgb(${Math.random()*255}, ${Math.random()*255}, ${Math.random()*255})`,
 	);
 }
 
