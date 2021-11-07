@@ -1,0 +1,13 @@
+[*.ts]
+indent_style = tab
+
+[*.html]
+indent_style = tab
+
+[*.json]
+indent_style = space
+indent_size = 2
+
+[*.yaml]
+indent_style = space
+indent_size = 2

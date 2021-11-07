@@ -1,0 +1,9 @@
+version: '3.8'
+
+services:
+  watch:
+    image: node:17-alpine
+    volumes:
+      - $PWD:/gravity
+    working_dir: /gravity
+    command: npx tsc --watch
