@@ -5,7 +5,7 @@ canvas.width = 500;
 canvas.height = 400;
 document.body.appendChild(canvas);
 
-const context = canvas.getContext('2d');
+const context = canvas.getContext('2d')!;
 if (!context) {
 	throw new Error('Got a null context from the canvas.');
 }
@@ -18,6 +18,7 @@ for (let i = 0; i < particles.length; i++) {
 	);
 }
 
+// TODO use a worker and not an interval
 let lastTick = +new Date();
 setInterval(() => {
 	const thisTick = +new Date();
@@ -28,7 +29,7 @@ setInterval(() => {
 	lastTick = thisTick;
 }, 1000 / 30);
 
-setInterval(() => {
+function draw () {
 	context.clearRect(0, 0, canvas.width, canvas.height);
 	for (let i = 0; i < particles.length; i++) {
 		context.fillStyle = particles[i].style;
@@ -42,4 +43,7 @@ setInterval(() => {
 		);
 		context.fill();
 	}
-}, 1000 / 30);
+
+	window.requestAnimationFrame(draw);
+}
+window.requestAnimationFrame(draw);
