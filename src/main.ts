@@ -1,5 +1,10 @@
 import { Particle } from './particle';
 
+const go = new Go();
+WebAssembly.instantiateStreaming(fetch("./dist/engine.wasm"), go.importObject).then((result) => {
+	go.run(result.instance);
+});
+
 const canvas = document.createElement('canvas');
 canvas.width = 500;
 canvas.height = 400;
@@ -9,6 +14,8 @@ const context = canvas.getContext('2d')!;
 if (!context) {
 	throw new Error('Got a null context from the canvas.');
 }
+
+// TODO don't commit the watcher for go
 
 // TODO partition the space to optimize performance
 const particles = Array<Particle>(2000);

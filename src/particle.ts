@@ -2,24 +2,19 @@ export class Particle {
 	static physicalRadius = 5;
 	static displayRadius = 5;
 
-	static constantSpeed = 1; // pixels per second? TODO
-
 	public x: number;
 	public y: number;
 	public style: string;
-	public direction: number;
-	public velocityPerSecond: number;
-	public decelerationRatePerSecond: number;
-	public isMoving: boolean;
+	public direction: number = 0;
+	public velocityPerSecond: number = 0;
+	public decelerationRatePerSecond: number = 0.6;
+	public isMoving: boolean = true;
+	public bounceFactor: number = 1.5;
 
 	constructor(x: number, y: number) {
 		this.x = x;
 		this.y = y;
 		this.style = `rgb(${Math.random()*255}, ${Math.random()*255}, ${Math.random()*255})`;
-		this.direction = 0;
-		this.velocityPerSecond = 0;
-		this.decelerationRatePerSecond = 1; // per second
-		this.isMoving = true;
 	}
 
 	tick(particles: Particle[], elapsedSeconds: number) {
@@ -49,14 +44,14 @@ export class Particle {
 				continue;
 			}
 
-			if (!this.doesCollide(particle)) {
+			const distance = this.distance(particle);
+			if (distance >= (Particle.physicalRadius * 2)) {
 				continue;
 			}
 
-			// TODO merge multiple directions if there are multiple collisions
+			// TODO merge multiple directions and speeds if there are multiple collisions
 			this.direction = Math.atan2(this.y - particle.y, this.x - particle.x);
-			// TODO have a proper, non-constant speed
-			this.velocityPerSecond += Particle.constantSpeed;
+			this.velocityPerSecond = ((Particle.physicalRadius * 2) - distance * this.bounceFactor); // TODO broken?
 
 			hasMoved = true;
 			particle.isMoving = true;
@@ -65,15 +60,9 @@ export class Particle {
 		this.isMoving = hasMoved || this.velocityPerSecond > 0;
 	}
 
-	static physicalPerimeter = Particle.physicalRadius * 2;
-	private doesCollide(particle: Particle): boolean {
+	private distance(particle: Particle): number {
 		const deltaX = this.x - particle.x;
 		const deltaY = this.y - particle.y;
-		if (deltaX > Particle.physicalPerimeter || deltaY > Particle.physicalPerimeter) {
-			return false
-		}
-
-		const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-		return distance < Particle.physicalPerimeter;
+		return Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 	}
 }
