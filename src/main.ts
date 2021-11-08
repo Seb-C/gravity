@@ -1,8 +1,14 @@
 import { Particle } from './particle';
 
+// Required to have the root context used by golang
+import engine from './engine/main';
+
 const go = new Go();
 WebAssembly.instantiateStreaming(fetch("./dist/engine.wasm"), go.importObject).then((result) => {
 	go.run(result.instance);
+
+	// TODO share memory space instead of serializing it like this
+	console.log((<any>engine).getParticles())
 });
 
 const canvas = document.createElement('canvas');
