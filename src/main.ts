@@ -36,8 +36,8 @@ function draw () {
 		context.fillStyle = particles[i].style;
 		context.beginPath();
 		context.arc(
-			particles[i].x,
-			particles[i].y,
+			particles[i].positionX,
+			particles[i].positionY,
 			Particle.displayRadius,
 			0,
 			2 * Math.PI,
