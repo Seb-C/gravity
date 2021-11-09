@@ -1,1 +1,1 @@
-self.importScripts('../require.js');
+console.log('hello from worker')
