@@ -21,6 +21,8 @@ if (!context) {
 	throw new Error('Got a null context from the canvas.');
 }
 
+(<any>window).testcanvas = context;
+
 // TODO don't commit the watcher for go
 
 // TODO partition the space to optimize performance
@@ -42,6 +44,36 @@ setInterval(() => {
 	}
 	lastTick = thisTick;
 }, 1000 / 30);
+
+let t1 = +new Date();
+let x: { x: number, y: number };
+let elapsedSeconds = 0.0435346;
+let delta: number;
+for (let i = 0; i < 1000000; i++) {
+	x = { x: 0, y: 0 };
+	delta = 1.2 * elapsedSeconds * i;
+	x.x = delta * Math.cos(Math.PI * 2);
+	x.y = delta * Math.sin(Math.PI * 2);
+	x.x = Math.sqrt(x.x);
+}
+let t2 = +new Date();
+console.log('js rand v2', t2-t1, 'ms');
+
+t1 = +new Date();
+for (let i = 0; i < 1000000; i++) {
+	context.fillStyle = "rgb(1, 2, 3)"
+	context.beginPath();
+	context.arc(
+		42,
+		56,
+		23,
+		0,
+		2 * Math.PI,
+	);
+	context.fill();
+}
+t2 = +new Date();
+console.log('js draw', t2-t1, 'ms');
 
 function draw () {
 	context.clearRect(0, 0, canvas.width, canvas.height);
