@@ -1,20 +1,23 @@
 export class Particle {
-	static physicalRadius = 5;
-	static displayRadius = 5;
-
 	public positionX: number;
 	public positionY: number;
 	public style: string;
+	public physicalRadius: number;
 
 	public velocityXPerSecond: number = 0;
 	public velocityYPerSecond: number = 0;
 
 	public decelerationRatePerSecond: number = 0.8;
 
-	constructor(positionX: number, positionY: number) {
+	constructor(
+		positionX: number,
+		positionY: number,
+		physicalRadius: number,
+	) {
 		this.positionX = positionX;
 		this.positionY = positionY;
 		this.style = `rgb(${Math.random()*255}, ${Math.random()*255}, ${Math.random()*255})`;
+		this.physicalRadius = physicalRadius;
 	}
 
 	tick(particles: Particle[], elapsedSeconds: number) {
@@ -40,7 +43,7 @@ export class Particle {
 			}
 
 			const distance = this.distance(particle);
-			if (distance >= (Particle.physicalRadius * 2)) {
+			if (distance >= (this.physicalRadius * 2)) {
 				continue;
 			}
 
