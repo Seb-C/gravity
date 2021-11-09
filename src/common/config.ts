@@ -5,5 +5,6 @@ export interface Config {
 	},
 	particles: {
 		displayRadius: number,
+		amount: number,
 	},
 }

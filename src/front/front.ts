@@ -27,6 +27,7 @@ function init() {
 			height: 400,
 		},
 		particles: {
+			amount: 3000,
 			displayRadius: 5,
 		},
 	};

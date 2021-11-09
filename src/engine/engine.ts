@@ -15,7 +15,7 @@ self.postMessage({ type: 'ready' });
 
 function init(config: Config) {
 	// TODO partition the space to optimize performance
-	const particles = Array<Particle>(2000);
+	const particles = Array<Particle>(config.particles.amount);
 	for (let i = 0; i < particles.length; i++) {
 		particles[i] = new Particle(
 			config.canvas.width * Math.random(),
