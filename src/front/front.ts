@@ -1,5 +1,7 @@
 import { Particle } from './particle';
 
+const engine = new Worker('./dist/engine/engine.js');
+
 const canvas = document.createElement('canvas');
 canvas.width = 500;
 canvas.height = 400;

@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "lib": ["es5", "es6", "dom"],
+    "outDir": "../../dist/front",
+    "rootDir": ".",
+    "module": "AMD",
+    "target": "ES5",
+    "removeComments": true,
+    "sourceMap": true,
+    "strict": true
+  },
+  "composite": true
+}

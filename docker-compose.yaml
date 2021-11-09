@@ -6,7 +6,7 @@ services:
     volumes:
       - $PWD:/gravity
     working_dir: /gravity
-    command: npx tsc --watch --preserveWatchOutput
+    command: npx tsc --build src --watch --preserveWatchOutput
   http:
     image: nginx:alpine
     volumes:

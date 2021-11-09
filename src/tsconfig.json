@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "module": "AMD",
+    "target": "ES5",
+    "lib": ["es5", "es6"],
+    "removeComments": true,
+    "outDir": "../dist",
+    "sourceMap": true,
+    "strict": true,
+    "rootDir": "."
+  },
+  "files": [],
+  "references": [
+    { "path": "./engine" },
+    { "path": "./front" }
+  ]
+}
