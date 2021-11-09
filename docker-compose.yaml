@@ -7,15 +7,6 @@ services:
       - $PWD:/gravity
     working_dir: /gravity
     command: npx tsc --watch --preserveWatchOutput
-  engine:
-    image: tinygo/tinygo:0.20.0
-    volumes:
-      - $PWD:/gravity
-    working_dir: /gravity
-    environment:
-      - GOOS=js
-      - GOARCH=wasm
-    command: "./reflex -r '\\.go$$' -- tinygo build -o ./dist/engine.wasm -target=wasm ./src/engine/main.go"
   http:
     image: nginx:alpine
     volumes:
