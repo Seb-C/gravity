@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "lib": ["es5", "es6", "es2017", "webworker"],
+    "lib": ["es5", "es6", "webworker"],
     "outDir": "../../dist/engine",
     "rootDir": ".",
     "module": "AMD",

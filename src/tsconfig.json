@@ -2,7 +2,7 @@
   "compilerOptions": {
     "module": "AMD",
     "target": "ES5",
-    "lib": ["es5", "es6", "es2017"],
+    "lib": ["es5", "es6"],
     "removeComments": true,
     "outDir": "../dist",
     "sourceMap": true,

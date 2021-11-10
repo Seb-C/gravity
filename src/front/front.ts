@@ -1,34 +1,26 @@
-import { ParticleType } from '../common/particle-type';
 import { Config } from '../common/config';
-import { Buffers } from '../common/buffers';
 
-let config: Config;
+let particles: Array<{
+	positionX: number,
+	positionY: number,
+	style: string,
+}> = [];
 
 const engine = new Worker('./static/engine.js');
 engine.addEventListener('message', (event: MessageEvent) => {
 	switch (event.data?.type) {
 		case 'ready':
-			config = createConfig();
+			init();
 			return;
-		case 'buffers':
-			const buffers = new Buffers(event.data.buffers);
-			init(config, buffers);
+		case 'particles':
+			particles = event.data.particles;
 			return;
 		default:
 			throw new Error(`Unknown message type ${event.data?.type} received by front.`);
 	}
 });
 
-function createConfig(): Config {
-	const types = new Array<ParticleType>(10);
-	for (let i = 0; i < types.length; i++) {
-		types[i] = new ParticleType(
-			i,
-			`rgb(${Math.random()*255}, ${Math.random()*255}, ${Math.random()*255})`,
-			5,
-		);
-	}
-
+function init() {
 	const config: Config = {
 		canvas: {
 			width: 500,
@@ -36,20 +28,16 @@ function createConfig(): Config {
 		},
 		particles: {
 			amount: 3000,
-			types,
+			displayRadius: 5,
 		},
 	};
 
-	engine.postMessage({ type: 'config', config });
-
-	return config
-}
-
-function init(config: Config, buffers: Buffers) {
 	const canvas = document.createElement('canvas');
 	canvas.width = config.canvas.width;
 	canvas.height = config.canvas.height;
 	document.body.appendChild(canvas);
+
+	engine.postMessage({ type: 'config', config });
 
 	const context = canvas.getContext('2d')!;
 	if (!context) {
@@ -58,14 +46,13 @@ function init(config: Config, buffers: Buffers) {
 
 	function draw () {
 		context.clearRect(0, 0, canvas.width, canvas.height);
-		for (let i = 0; i < config.particles.amount; i++) {
-			const type = config.particles.types[buffers.types[i]];
-			context.fillStyle = type.fillStyle;
+		for (let i = 0; i < particles.length; i++) {
+			context.fillStyle = particles[i].style;
 			context.beginPath();
 			context.arc(
-				buffers.xPositions[i],
-				buffers.yPositions[i],
-				type.radius,
+				particles[i].positionX,
+				particles[i].positionY,
+				config.particles.displayRadius,
 				0,
 				2 * Math.PI,
 			);
