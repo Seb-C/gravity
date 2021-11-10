@@ -24,22 +24,16 @@ export class Particle implements ParticleInterface {
 		this.radius = radius;
 	}
 
-	tick(particles: Particle[], elapsedSeconds: number) {
-		this.move(elapsedSeconds);
+	public move(elapsedSeconds: number) {
+		this.positionX += elapsedSeconds * this.velocityXPerSecond;
+		this.positionY += elapsedSeconds * this.velocityYPerSecond;
 
 		const velocityDecreaseRate = this.decelerationRatePerSecond * elapsedSeconds;
 		this.velocityXPerSecond *= 1 - velocityDecreaseRate;
 		this.velocityYPerSecond *= 1 - velocityDecreaseRate;
-
-		this.computeCollisions(particles);
 	}
 
-	private move(elapsedSeconds: number) {
-		this.positionX += elapsedSeconds * this.velocityXPerSecond;
-		this.positionY += elapsedSeconds * this.velocityYPerSecond;
-	}
-
-	private computeCollisions(particles: Particle[]) {
+	public computeCollisions(particles: Particle[]) {
 		for (let i = 0; i < particles.length; i++) {
 			const particle = particles[i];
 			if (particle === this) {
@@ -56,7 +50,7 @@ export class Particle implements ParticleInterface {
 		}
 	}
 
-	private distance(particle: Particle): number {
+	public distance(particle: Particle): number {
 		const deltaX = this.positionX - particle.positionX;
 		const deltaY = this.positionY - particle.positionY;
 		return Math.sqrt(deltaX * deltaX + deltaY * deltaY);
