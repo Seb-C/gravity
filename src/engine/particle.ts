@@ -1,23 +1,39 @@
+import { Buffers } from '../common/buffers';
+import { ParticleType } from '../common/particle-type';
+
 export class Particle {
-	public positionX: number;
-	public positionY: number;
-	public style: string;
-	public physicalRadius: number;
+	private types: ParticleType[];
+	private buffers: Buffers;
+
+	private index: number;
 
 	public velocityXPerSecond: number = 0;
 	public velocityYPerSecond: number = 0;
 
 	public decelerationRatePerSecond: number = 0.8;
 
+	get positionX(): number { return this.buffers.xPositions[this.index]; }
+	get positionY(): number { return this.buffers.yPositions[this.index]; }
+	get type(): ParticleType { return this.types[this.buffers.types[this.index]]; }
+
+	set positionX(positionX: number) { this.buffers.xPositions[this.index] = positionX; }
+	set positionY(positionY: number) { this.buffers.yPositions[this.index] = positionY; }
+	set type(type: ParticleType) { this.buffers.types[this.index] = type.index; }
+
 	constructor(
+		types: ParticleType[],
+		buffers: Buffers,
+		index: number,
+		type: ParticleType,
 		positionX: number,
 		positionY: number,
-		physicalRadius: number,
 	) {
+		this.types = types;
+		this.buffers = buffers;
+		this.index = index;
+		this.type = type;
 		this.positionX = positionX;
 		this.positionY = positionY;
-		this.style = `rgb(${Math.random()*255}, ${Math.random()*255}, ${Math.random()*255})`;
-		this.physicalRadius = physicalRadius;
 	}
 
 	tick(particles: Particle[], elapsedSeconds: number) {
@@ -43,7 +59,7 @@ export class Particle {
 			}
 
 			const distance = this.distance(particle);
-			if (distance >= (this.physicalRadius * 2)) {
+			if (distance >= (this.type.radius * 2)) {
 				continue;
 			}
 
