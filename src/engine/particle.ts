@@ -1,6 +1,7 @@
 import { ParticleType } from '../common/particle-type';
+import { Particle as ParticleInterface } from '../common/particle';
 
-export class Particle {
+export class Particle implements ParticleInterface {
 	public positionX: number;
 	public positionY: number;
 	public typeIndex: number;

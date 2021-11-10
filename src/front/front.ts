@@ -1,11 +1,8 @@
 import { Config } from '../common/config';
 import { ParticleType } from './particle-type';
+import { Particle } from '../common/particle';
 
-let particles: Array<{
-	positionX: number,
-	positionY: number,
-	typeIndex: number,
-}> = [];
+let particles: Particle[] = [];
 
 const engine = new Worker('./static/engine.js');
 engine.addEventListener('message', (event: MessageEvent) => {
