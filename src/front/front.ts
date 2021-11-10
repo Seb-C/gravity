@@ -1,9 +1,10 @@
 import { Config } from '../common/config';
+import { ParticleType } from './particle-type';
 
 let particles: Array<{
 	positionX: number,
 	positionY: number,
-	style: string,
+	typeIndex: number,
 }> = [];
 
 const engine = new Worker('./static/engine.js');
@@ -21,6 +22,14 @@ engine.addEventListener('message', (event: MessageEvent) => {
 });
 
 function init() {
+	const particleTypes = new Array(100);
+	for (let i = 0; i < particleTypes.length; i++) {
+		particleTypes[i] = new ParticleType(
+			i,
+			`rgb(${Math.random()*255}, ${Math.random()*255}, ${Math.random()*255})`,
+		);
+	}
+
 	const config: Config = {
 		canvas: {
 			width: 500,
@@ -29,6 +38,7 @@ function init() {
 		particles: {
 			amount: 3000,
 			displayRadius: 5,
+			types: particleTypes,
 		},
 	};
 
@@ -47,11 +57,14 @@ function init() {
 	function draw () {
 		context.clearRect(0, 0, canvas.width, canvas.height);
 		for (let i = 0; i < particles.length; i++) {
-			context.fillStyle = particles[i].style;
+			const particle = particles[i];
+			const particleType = particleTypes[particle.typeIndex];
+
+			context.fillStyle = particleType.style;
 			context.beginPath();
 			context.arc(
-				particles[i].positionX,
-				particles[i].positionY,
+				particle.positionX,
+				particle.positionY,
 				config.particles.displayRadius,
 				0,
 				2 * Math.PI,

@@ -20,6 +20,7 @@ function init(config: Config) {
 		particles[i] = new Particle(
 			config.canvas.width * Math.random(),
 			config.canvas.height * Math.random(),
+			config.particles.types[Math.floor(Math.random() * config.particles.types.length)],
 			config.particles.displayRadius,
 		);
 	}
@@ -33,7 +34,6 @@ function init(config: Config) {
 		}
 		lastTick = thisTick;
 
-		// TODO sending it each time may be slow (objects are copied), use a SharedArrayBuffer instead
 		postMessage({ type: 'particles', particles });
 	}, 5);
 }

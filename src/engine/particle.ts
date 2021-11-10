@@ -1,7 +1,9 @@
+import { ParticleType } from '../common/particle-type';
+
 export class Particle {
 	public positionX: number;
 	public positionY: number;
-	public style: string;
+	public typeIndex: number;
 	public physicalRadius: number;
 
 	public velocityXPerSecond: number = 0;
@@ -12,11 +14,12 @@ export class Particle {
 	constructor(
 		positionX: number,
 		positionY: number,
+		type: ParticleType,
 		physicalRadius: number,
 	) {
 		this.positionX = positionX;
 		this.positionY = positionY;
-		this.style = `rgb(${Math.random()*255}, ${Math.random()*255}, ${Math.random()*255})`;
+		this.typeIndex = type.index;
 		this.physicalRadius = physicalRadius;
 	}
 

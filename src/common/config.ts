@@ -1,3 +1,5 @@
+import { ParticleType } from './particle-type';
+
 export interface Config {
 	canvas: {
 		width: number,
@@ -6,5 +8,6 @@ export interface Config {
 	particles: {
 		displayRadius: number,
 		amount: number,
+		types: ParticleType[],
 	},
 }
