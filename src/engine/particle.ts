@@ -4,7 +4,7 @@ export class Particle {
 	public positionX: number;
 	public positionY: number;
 	public typeIndex: number;
-	public physicalRadius: number;
+	public radius: number;
 
 	public velocityXPerSecond: number = 0;
 	public velocityYPerSecond: number = 0;
@@ -15,12 +15,12 @@ export class Particle {
 		positionX: number,
 		positionY: number,
 		type: ParticleType,
-		physicalRadius: number,
+		radius: number,
 	) {
 		this.positionX = positionX;
 		this.positionY = positionY;
 		this.typeIndex = type.index;
-		this.physicalRadius = physicalRadius;
+		this.radius = radius;
 	}
 
 	tick(particles: Particle[], elapsedSeconds: number) {
@@ -46,7 +46,7 @@ export class Particle {
 			}
 
 			const distance = this.distance(particle);
-			if (distance >= (this.physicalRadius * 2)) {
+			if (distance >= (this.radius * 2)) {
 				continue;
 			}
 

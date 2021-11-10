@@ -6,7 +6,7 @@ export interface Config {
 		height: number,
 	},
 	particles: {
-		displayRadius: number,
+		radius: number,
 		amount: number,
 		types: ParticleType[],
 	},

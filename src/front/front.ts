@@ -37,7 +37,7 @@ function init() {
 		},
 		particles: {
 			amount: 3000,
-			displayRadius: 5,
+			radius: 5,
 			types: particleTypes,
 		},
 	};
@@ -65,7 +65,7 @@ function init() {
 			context.arc(
 				particle.positionX,
 				particle.positionY,
-				config.particles.displayRadius,
+				config.particles.radius,
 				0,
 				2 * Math.PI,
 			);

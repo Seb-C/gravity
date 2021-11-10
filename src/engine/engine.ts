@@ -21,7 +21,7 @@ function init(config: Config) {
 			config.canvas.width * Math.random(),
 			config.canvas.height * Math.random(),
 			config.particles.types[Math.floor(Math.random() * config.particles.types.length)],
-			config.particles.displayRadius,
+			config.particles.radius,
 		);
 	}
 
