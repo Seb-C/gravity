@@ -33,8 +33,8 @@ function init() {
 			height: 400,
 		},
 		particles: {
-			amount: 3000,
-			radius: 5,
+			amount: 3,
+			radius: 150,
 			types: particleTypes,
 		},
 	};

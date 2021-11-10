@@ -13,6 +13,10 @@ export class RootCluster {
 
 	add(particle: Particle) {
 		this.allParticles.push(particle);
+		this.addToTree(particle);
+	}
+
+	addToTree(particle: Particle) {
 		if (this.root === null) {
 			this.root = particle;
 			return;
@@ -20,6 +24,7 @@ export class RootCluster {
 
 		if (this.root instanceof Particle) {
 			this.root = new Cluster(this.root, particle, null);
+			particle.parentCluster = this.root;
 			return;
 		}
 
@@ -30,16 +35,16 @@ export class RootCluster {
 			if (distanceLeft <= distanceRight) {
 				if (currentCluster.left instanceof Particle) {
 					currentCluster.left = new Cluster(currentCluster.left, particle, currentCluster);
-					currentCluster = currentCluster.left;
-					break;
+					particle.parentCluster = currentCluster;
+					return;
 				} else {
 					currentCluster = currentCluster.left;
 				}
 			} else {
 				if (currentCluster.right instanceof Particle) {
 					currentCluster.right = new Cluster(currentCluster.right, particle, currentCluster);
-					currentCluster = currentCluster.right;
-					break;
+					particle.parentCluster = currentCluster;
+					return;
 				} else {
 					currentCluster = currentCluster.right;
 				}
@@ -47,11 +52,103 @@ export class RootCluster {
 		}
 	}
 
-	tick(elapsedSeconds: number) {
-		const particles = this.allParticles;
-		for (let i = 0; i < particles.length; i++) {
-			particles[i].move(elapsedSeconds);
-			particles[i].computeCollisions(particles);
+	remove(particle: Particle, index: number) {
+		this.allParticles.splice(index, 1);
+		this.removeFromTree(particle);
+	}
+
+	removeFromTree(particle: Particle) {
+		if (particle.parentCluster == null) {
+			return;
+		}
+
+		const parentOfParentCluster = particle.parentCluster.parentCluster;
+		if (parentOfParentCluster == null && this.root != particle.parentCluster) {
+			throw new Error(`The cluster is not root, but it's parentCluster is null.`);
+		}
+
+		if (particle == particle.parentCluster.left) {
+			if (parentOfParentCluster == null) {
+				this.root = particle.parentCluster.right;
+				this.root.parentCluster = null;
+			} else if (particle.parentCluster == parentOfParentCluster.left) {
+				parentOfParentCluster.left = particle.parentCluster.right;
+				parentOfParentCluster.left.parentCluster = parentOfParentCluster;
+			} else if (particle.parentCluster == parentOfParentCluster.right) {
+				parentOfParentCluster.right = particle.parentCluster.right;
+				parentOfParentCluster.right.parentCluster = parentOfParentCluster;
+			}
+		} else if (particle == particle.parentCluster.right) {
+			if (parentOfParentCluster == null) {
+				this.root = particle.parentCluster.left;
+				this.root.parentCluster = null;
+			} else if (particle.parentCluster == parentOfParentCluster.left) {
+				parentOfParentCluster.left = particle.parentCluster.left;
+				parentOfParentCluster.left.parentCluster = parentOfParentCluster;
+			} else if (particle.parentCluster == parentOfParentCluster.right) {
+				parentOfParentCluster.right = particle.parentCluster.left;
+				parentOfParentCluster.right.parentCluster = parentOfParentCluster;
+			}
+		}
+
+		particle.parentCluster = null;
+	}
+
+	public tick(elapsedSeconds: number) {
+		console.log(this);
+		for (let i = 0; i < this.allParticles.length; i++) {
+			const particle = this.allParticles[i];
+			if (particle.move(elapsedSeconds)) {
+				// TODO this is not optimistic, there must be a better way to update the tree
+				this.removeFromTree(particle);
+				this.addToTree(particle);
+			}
+
+			const collidedParticle = this.searchCollision(particle);
+			if (collidedParticle !== null) {
+				particle.updateVelocityFromCollision(collidedParticle);
+			}
+		}
+	}
+
+	/**
+	 * Searches in the tree if the given particle collides with any other.
+	 * If it does, then the other particle will be returned.
+	 */
+	public searchCollision(particle: Particle): Particle | null {
+		if (this.root === null) {
+			return null;
+		}
+
+		if (this.root instanceof Particle) {
+			if (this.root.doesCollide(particle)) {
+				return this.root;
+			} else {
+				return null;
+			}
+		}
+
+		if (!this.root.doesCollide(particle)) {
+			return null;
+		}
+
+		let currentNode: Cluster = this.root;
+		while (true) {
+			if (currentNode.left.doesCollide(particle)) {
+				if (currentNode.left instanceof Particle) {
+					return currentNode.left;
+				} else {
+					currentNode = currentNode.left;
+				}
+			} else if (currentNode.right.doesCollide(particle)) {
+				if (currentNode.right instanceof Particle) {
+					return currentNode.right;
+				} else {
+					currentNode = currentNode.right;
+				}
+			} else {
+				return null;
+			}
 		}
 	}
 }
@@ -59,21 +156,26 @@ export class RootCluster {
 export class Cluster {
 	public left: Node;
 	public right: Node;
-	public parent: Cluster | null;
+	public parentCluster: Cluster | null;
 
 	public minX!: number;
 	public minY!: number;
 	public maxX!: number;
 	public maxY!: number;
 
-	constructor(left: Node, right: Node, parent: Cluster | null) {
+	constructor(left: Node, right: Node, parentCluster: Cluster | null) {
 		this.left = left;
 		this.right = right;
-		this.parent = parent;
+		this.parentCluster = parentCluster;
 		this.updateBoundaries();
 	}
 
 	public updateBoundaries() {
+		const previousMinX = this.minX;
+		const previousMinY = this.minY;
+		const previousMaxX = this.maxX;
+		const previousMaxY = this.maxY;
+
 		if (this.left instanceof Particle) {
 			this.minX = this.left.positionX - this.left.radius;
 			this.minY = this.left.positionY - this.left.radius;
@@ -98,7 +200,13 @@ export class Cluster {
 			this.maxY = Math.max(this.maxY, this.right.maxY);
 		}
 
-		this.parent?.updateBoundaries();
+		if (previousMinX != this.minX
+			|| previousMinY != this.minY
+			|| previousMaxX != this.maxX
+			|| previousMaxY != this.maxY
+		) {
+			this.parentCluster?.updateBoundaries();
+		}
 	}
 
 	public distance(particle: Particle): number {
@@ -107,5 +215,17 @@ export class Cluster {
 		const deltaX = centerX - particle.positionX;
 		const deltaY = centerY - particle.positionY;
 		return Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+	}
+
+	public doesCollide(particle: Particle): boolean {
+		return (
+			(
+				particle.positionX + particle.radius > this.minX
+				|| particle.positionX - particle.radius < this.maxX
+			) && (
+				particle.positionY + particle.radius > this.minY
+				|| particle.positionY - particle.radius < this.maxY
+			)
+		);
 	}
 }
