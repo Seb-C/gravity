@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "lib": ["es5", "es6"],
+    "lib": ["ES2021"],
     "outDir": "../../dist/common",
     "rootDir": ".",
     "module": "AMD",
