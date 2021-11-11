@@ -1,5 +1,11 @@
 {
   "devDependencies": {
+    "@types/jasmine": "^3.10.2",
+    "jasmine": "^3.10.0",
+    "ts-node": "^10.4.0",
     "typescript": "^4.4.4"
+  },
+  "scripts": {
+    "test": "ts-node node_modules/jasmine/bin/jasmine --config=jasmine.json"
   }
 }

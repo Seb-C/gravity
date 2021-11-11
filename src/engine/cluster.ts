@@ -11,12 +11,12 @@ export class RootCluster {
 		this.allParticles = [];
 	}
 
-	add(particle: Particle) {
+	public add(particle: Particle) {
 		this.allParticles.push(particle);
 		this.addToTree(particle);
 	}
 
-	addToTree(particle: Particle) {
+	public addToTree(particle: Particle) {
 		if (this.root === null) {
 			this.root = particle;
 			return;
@@ -52,12 +52,12 @@ export class RootCluster {
 		}
 	}
 
-	remove(particle: Particle, index: number) {
+	public remove(particle: Particle, index: number) {
 		this.allParticles.splice(index, 1);
 		this.removeFromTree(particle);
 	}
 
-	removeFromTree(particle: Particle) {
+	public removeFromTree(particle: Particle) {
 		if (particle.parentCluster == null) {
 			return;
 		}
@@ -67,6 +67,7 @@ export class RootCluster {
 			throw new Error(`The cluster is not root, but it's parentCluster is null.`);
 		}
 
+		// TODO unit test this to find the issue
 		if (particle == particle.parentCluster.left) {
 			if (parentOfParentCluster == null) {
 				this.root = particle.parentCluster.right;
@@ -95,7 +96,6 @@ export class RootCluster {
 	}
 
 	public tick(elapsedSeconds: number) {
-		console.log(this);
 		for (let i = 0; i < this.allParticles.length; i++) {
 			const particle = this.allParticles[i];
 			if (particle.move(elapsedSeconds)) {
