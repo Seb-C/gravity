@@ -23,8 +23,7 @@ export class RootCluster {
 		}
 
 		if (this.root instanceof Particle) {
-			this.root = new Cluster(this.root, particle, null);
-			particle.parentCluster = this.root;
+			this.root = Cluster.createAndSetParents(this.root, particle, null);
 			return;
 		}
 
@@ -34,16 +33,14 @@ export class RootCluster {
 			const distanceRight = currentCluster.right.distance(particle);
 			if (distanceLeft <= distanceRight) {
 				if (currentCluster.left instanceof Particle) {
-					currentCluster.left = new Cluster(currentCluster.left, particle, currentCluster);
-					particle.parentCluster = currentCluster;
+					currentCluster.left = Cluster.createAndSetParents(currentCluster.left, particle, currentCluster);
 					return;
 				} else {
 					currentCluster = currentCluster.left;
 				}
 			} else {
 				if (currentCluster.right instanceof Particle) {
-					currentCluster.right = new Cluster(currentCluster.right, particle, currentCluster);
-					particle.parentCluster = currentCluster;
+					currentCluster.right = Cluster.createAndSetParents(currentCluster.right, particle, currentCluster);
 					return;
 				} else {
 					currentCluster = currentCluster.right;
@@ -58,12 +55,18 @@ export class RootCluster {
 	}
 
 	public removeFromTree(particle: Particle) {
+		if (particle === this.root) {
+			particle.parentCluster = null;
+			this.root = null;
+			return;
+		}
 		if (particle.parentCluster == null) {
+			// The particle may not belong to this tree
 			return;
 		}
 
-		const parentOfParentCluster = particle.parentCluster.parentCluster;
-		if (parentOfParentCluster == null && this.root != particle.parentCluster) {
+		const parentOfParentCluster = particle.parentCluster?.parentCluster;
+		if (!parentOfParentCluster && this.root != particle.parentCluster) {
 			throw new Error(`The cluster is not root, but it's parentCluster is null.`);
 		}
 
@@ -168,6 +171,17 @@ export class Cluster {
 		this.right = right;
 		this.parentCluster = parentCluster;
 		this.updateBoundaries();
+	}
+
+	public static createAndSetParents(
+		left: Node,
+		right: Node,
+		parentCluster: Cluster | null,
+	): Cluster {
+		const cluster = new Cluster(left, right, parentCluster);
+		left.parentCluster = cluster;
+		right.parentCluster = cluster;
+		return cluster;
 	}
 
 	public updateBoundaries() {
