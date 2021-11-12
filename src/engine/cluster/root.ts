@@ -108,14 +108,13 @@ export class Root {
 		for (let i = 0; i < this.allNodes.length; i++) {
 			const node = this.allNodes[i];
 			if (node.particle.move(elapsedSeconds)) {
-				// TODO there is probably a faster way than searching all the tree again
 				this.removeFromTree(node);
 				this.addToTree(node);
 			}
 
-			const collidedNode = this.searchCollision(node);
-			if (collidedNode !== null) {
-				node.particle.updateVelocityFromCollision(collidedNode.particle);
+			const collidedNodes = this.searchCollision(node);
+			for (let j = 0; j < collidedNodes.length; j++) {
+				node.particle.updateVelocityFromCollision(collidedNodes[j].particle);
 			}
 		}
 	}
@@ -124,42 +123,41 @@ export class Root {
 	 * Searches in the tree if the given node collides with any other.
 	 * If it does, then the collided node will be returned.
 	 */
-	public searchCollision(node: Node): Node | null {
-		// TODO handle multiple collisions?
+	public searchCollision(node: Node): Node[] {
 		if (this.root === null) {
-			return null;
+			return [];
 		}
 
 		if (this.root instanceof Node) {
 			if (this.root.particle.doesCollide(node.particle)) {
-				return this.root;
+				return [this.root];
 			} else {
-				return null;
+				return [];
 			}
 		}
 
-		if (!this.root.doesCollide(node)) {
-			return null;
-		}
+		const stack: Cluster[] = [this.root];
+		const collidingNodes: Node[] = [];
 
-		let currentNode: Cluster = this.root;
-		while (true) {
-			if (currentNode.left.doesCollide(node)) {
-				if (currentNode.left instanceof Node) {
-					return currentNode.left;
+		let currentCluster: Cluster | undefined;
+		while (currentCluster = stack.pop()) {
+			if (currentCluster.left.doesCollide(node)) {
+				if (currentCluster.left instanceof Node) {
+					collidingNodes.push(currentCluster.left);
 				} else {
-					currentNode = currentNode.left;
+					stack.push(currentCluster.left);
 				}
-			} else if (currentNode.right.doesCollide(node)) {
-				if (currentNode.right instanceof Node) {
-					return currentNode.right;
+			}
+			if (currentCluster.right.doesCollide(node)) {
+				if (currentCluster.right instanceof Node) {
+					collidingNodes.push(currentCluster.right);
 				} else {
-					currentNode = currentNode.right;
+					stack.push(currentCluster.right);
 				}
-			} else {
-				return null;
 			}
 		}
+
+		return collidingNodes;
 	}
 
 	public costOfAdding(node: Node, target: Cluster | Node): number {
