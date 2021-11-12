@@ -34,29 +34,37 @@ export class Cluster {
 	}
 
 	public updateBoundaries() {
-		const previousPositionX = this.positionX;
-		const previousPositionY = this.positionY;
-		const previousRadius = this.radius;
+		const { positionX, positionY, radius } = Cluster.computeBoundaries(this.left, this.right);
+		const hasChanged = (
+			positionX != this.positionX
+			|| positionY != this.positionY
+			|| radius != this.radius
+		);
 
-		const left = this.left instanceof Node ? this.left.particle : this.left;
-		const right = this.right instanceof Node ? this.right.particle : this.right;
+		this.positionX = positionX;
+		this.positionY = positionY;
+		this.radius = radius;
 
-		// Taking an average point between the centers of the two circles
-		this.positionX = left.positionX + ((right.positionX - left.positionX) / 2);
-		this.positionY = left.positionY + ((right.positionY - left.positionY) / 2);
-
-		// Approximating the radius from the distance between the two circles
-		const deltaX = left.positionX - right.positionX;
-		const deltaY = left.positionY - right.positionY;
-		const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-		this.radius = (distance / 2) + Math.max(left.radius, right.radius);
-
-		if (previousPositionX != this.positionX
-			|| previousPositionY != this.positionY
-			|| previousRadius != this.radius
-		) {
+		if (hasChanged) {
 			this.parentCluster?.updateBoundaries();
 		}
+	}
+
+	public static computeBoundaries(left: TreeAble, right: TreeAble) {
+		const leftElement = left instanceof Node ? left.particle : left;
+		const rightElement = right instanceof Node ? right.particle : right;
+
+		// Taking an average point between the centers of the two circles
+		const positionX = leftElement.positionX + ((rightElement.positionX - leftElement.positionX) / 2);
+		const positionY = leftElement.positionY + ((rightElement.positionY - leftElement.positionY) / 2);
+
+		// Approximating the radius from the distance between the two circles
+		const deltaX = leftElement.positionX - rightElement.positionX;
+		const deltaY = leftElement.positionY - rightElement.positionY;
+		const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+		const radius = (distance / 2) + Math.max(leftElement.radius, rightElement.radius);
+
+		return { positionX, positionY, radius }
 	}
 
 	public distance(node: Node): number {

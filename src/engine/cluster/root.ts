@@ -34,15 +34,10 @@ export class Root {
 
 		let currentCluster: Cluster = this.root;
 		while (true) {
-			// Getting the distance to the edge of each cluster (not to the center)
-			const distanceLeft = currentCluster.left instanceof Node
-				? (currentCluster.left.particle.distance(node.particle) - currentCluster.left.particle.radius)
-				: (currentCluster.left.distance(node) - currentCluster.left.radius);
-			const distanceRight = currentCluster.right instanceof Node
-				? (currentCluster.right.particle.distance(node.particle) - currentCluster.right.particle.radius)
-				: (currentCluster.right.distance(node) - currentCluster.right.radius);
+			const costOfAddingLeft = this.costOfAdding(node, currentCluster.left);
+			const costOfAddingRight = this.costOfAdding(node, currentCluster.right);
 
-			if (distanceLeft <= distanceRight) {
+			if (costOfAddingLeft <= costOfAddingRight) {
 				if (currentCluster.left instanceof Node) {
 					currentCluster.left = Cluster.createAndSetParents(currentCluster.left, node, currentCluster);
 					return;
@@ -130,6 +125,7 @@ export class Root {
 	 * If it does, then the collided node will be returned.
 	 */
 	public searchCollision(node: Node): Node | null {
+		// TODO handle multiple collisions?
 		if (this.root === null) {
 			return null;
 		}
@@ -164,5 +160,13 @@ export class Root {
 				return null;
 			}
 		}
+	}
+
+	public costOfAdding(node: Node, target: Cluster | Node): number {
+		const radiusBefore = target instanceof Node ? target.particle.radius : target.radius;
+		const { radius: radiusAfter } = Cluster.computeBoundaries(node, target);
+
+		// Returning the increase of the cluster's area as a cost
+		return (Math.PI * radiusAfter * radiusAfter) - (Math.PI * radiusBefore * radiusBefore);
 	}
 }
