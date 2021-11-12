@@ -1,8 +1,8 @@
 import { Config } from '../common/config';
 import { ParticleType } from './particle-type';
-import { Particle } from '../common/particle';
+import { SharedParticleProperties } from '../common/shared-particle-properties';
 
-let particles: Particle[] = [];
+let particles: SharedParticleProperties[] = [];
 
 const engine = new Worker('./static/engine.js');
 engine.addEventListener('message', (event: MessageEvent) => {
@@ -33,8 +33,8 @@ function init() {
 			height: 400,
 		},
 		particles: {
-			amount: 3,
-			radius: 150,
+			amount: 3000,
+			radius: 5,
 			types: particleTypes,
 		},
 	};

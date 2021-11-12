@@ -36,7 +36,7 @@ function init(config: Config) {
 
 		postMessage({
 			type: 'particles',
-			particles: rootCluster.allParticles,
+			particles: rootCluster.allSharedParticles,
 		});
 	}, 5);
 }

@@ -1,18 +1,22 @@
 import { Particle } from './particle';
+import { SharedParticleProperties } from '../common/shared-particle-properties';
 
 export type Node = Cluster | Particle;
 
 export class RootCluster {
 	public root: Node | null;
 	public allParticles: Particle[];
+	public allSharedParticles: SharedParticleProperties[];
 
 	constructor() {
 		this.root = null;
 		this.allParticles = [];
+		this.allSharedParticles = [];
 	}
 
 	public add(particle: Particle) {
 		this.allParticles.push(particle);
+		this.allSharedParticles.push(particle.sharedProperties);
 		this.addToTree(particle);
 	}
 
@@ -51,6 +55,7 @@ export class RootCluster {
 
 	public remove(particle: Particle, index: number) {
 		this.allParticles.splice(index, 1);
+		this.allSharedParticles.splice(index, 1);
 		this.removeFromTree(particle);
 	}
 
@@ -70,7 +75,6 @@ export class RootCluster {
 			throw new Error(`The cluster is not root, but it's parentCluster is null.`);
 		}
 
-		// TODO unit test this to find the issue
 		if (particle == particle.parentCluster.left) {
 			if (parentOfParentCluster == null) {
 				this.root = particle.parentCluster.right;
@@ -102,7 +106,6 @@ export class RootCluster {
 		for (let i = 0; i < this.allParticles.length; i++) {
 			const particle = this.allParticles[i];
 			if (particle.move(elapsedSeconds)) {
-				// TODO this is not optimistic, there must be a better way to update the tree
 				this.removeFromTree(particle);
 				this.addToTree(particle);
 			}
@@ -191,10 +194,10 @@ export class Cluster {
 		const previousMaxY = this.maxY;
 
 		if (this.left instanceof Particle) {
-			this.minX = this.left.positionX - this.left.radius;
-			this.minY = this.left.positionY - this.left.radius;
-			this.maxX = this.left.positionX + this.left.radius;
-			this.maxY = this.left.positionX + this.left.radius;
+			this.minX = this.left.sharedProperties.positionX - this.left.radius;
+			this.minY = this.left.sharedProperties.positionY - this.left.radius;
+			this.maxX = this.left.sharedProperties.positionX + this.left.radius;
+			this.maxY = this.left.sharedProperties.positionX + this.left.radius;
 		} else {
 			this.minX = this.left.minX;
 			this.minY = this.left.minY;
@@ -203,10 +206,10 @@ export class Cluster {
 		}
 
 		if (this.right instanceof Particle) {
-			this.minX = Math.min(this.minX, this.right.positionX - this.right.radius);
-			this.minY = Math.min(this.minY, this.right.positionY - this.right.radius);
-			this.maxX = Math.max(this.maxX, this.right.positionX + this.right.radius);
-			this.maxY = Math.max(this.maxY, this.right.positionY + this.right.radius);
+			this.minX = Math.min(this.minX, this.right.sharedProperties.positionX - this.right.radius);
+			this.minY = Math.min(this.minY, this.right.sharedProperties.positionY - this.right.radius);
+			this.maxX = Math.max(this.maxX, this.right.sharedProperties.positionX + this.right.radius);
+			this.maxY = Math.max(this.maxY, this.right.sharedProperties.positionY + this.right.radius);
 		} else {
 			this.minX = Math.min(this.minX, this.right.minX);
 			this.minY = Math.min(this.minY, this.right.minY);
@@ -226,19 +229,19 @@ export class Cluster {
 	public distance(particle: Particle): number {
 		const centerX = this.maxX = this.minX;
 		const centerY = this.maxY = this.minY;
-		const deltaX = centerX - particle.positionX;
-		const deltaY = centerY - particle.positionY;
+		const deltaX = centerX - particle.sharedProperties.positionX;
+		const deltaY = centerY - particle.sharedProperties.positionY;
 		return Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 	}
 
 	public doesCollide(particle: Particle): boolean {
 		return (
 			(
-				particle.positionX + particle.radius > this.minX
-				|| particle.positionX - particle.radius < this.maxX
+				particle.sharedProperties.positionX + particle.radius > this.minX
+				|| particle.sharedProperties.positionX - particle.radius < this.maxX
 			) && (
-				particle.positionY + particle.radius > this.minY
-				|| particle.positionY - particle.radius < this.maxY
+				particle.sharedProperties.positionY + particle.radius > this.minY
+				|| particle.sharedProperties.positionY - particle.radius < this.maxY
 			)
 		);
 	}
