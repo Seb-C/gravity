@@ -14,6 +14,11 @@ export class Cluster {
 		this.left = left;
 		this.right = right;
 		this.parentCluster = parentCluster;
+
+		this.positionX = NaN;
+		this.positionY = NaN;
+		this.radius = NaN;
+
 		this.updateBoundaries();
 	}
 

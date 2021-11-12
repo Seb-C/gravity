@@ -34,8 +34,14 @@ export class Root {
 
 		let currentCluster: Cluster = this.root;
 		while (true) {
-			const distanceLeft = currentCluster.left.distance(node);
-			const distanceRight = currentCluster.right.distance(node);
+			// Getting the distance to the edge of each cluster (not to the center)
+			const distanceLeft = currentCluster.left instanceof Node
+				? (currentCluster.left.particle.distance(node.particle) - currentCluster.left.particle.radius)
+				: (currentCluster.left.distance(node) - currentCluster.left.radius);
+			const distanceRight = currentCluster.right instanceof Node
+				? (currentCluster.right.particle.distance(node.particle) - currentCluster.right.particle.radius)
+				: (currentCluster.right.distance(node) - currentCluster.right.radius);
+
 			if (distanceLeft <= distanceRight) {
 				if (currentCluster.left instanceof Node) {
 					currentCluster.left = Cluster.createAndSetParents(currentCluster.left, node, currentCluster);
@@ -107,6 +113,7 @@ export class Root {
 		for (let i = 0; i < this.allNodes.length; i++) {
 			const node = this.allNodes[i];
 			if (node.particle.move(elapsedSeconds)) {
+				// TODO there is probably a faster way than searching all the tree again
 				this.removeFromTree(node);
 				this.addToTree(node);
 			}
@@ -120,7 +127,7 @@ export class Root {
 
 	/**
 	 * Searches in the tree if the given node collides with any other.
-	 * If it does, then the other node will be returned.
+	 * If it does, then the collided node will be returned.
 	 */
 	public searchCollision(node: Node): Node | null {
 		if (this.root === null) {
