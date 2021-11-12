@@ -164,10 +164,9 @@ export class Cluster {
 	public right: Node;
 	public parentCluster: Cluster | null;
 
-	public minX!: number;
-	public minY!: number;
-	public maxX!: number;
-	public maxY!: number;
+	public positionX!: number;
+	public positionY!: number;
+	public radius!: number;
 
 	constructor(left: Node, right: Node, parentCluster: Cluster | null) {
 		this.left = left;
@@ -188,61 +187,43 @@ export class Cluster {
 	}
 
 	public updateBoundaries() {
-		const previousMinX = this.minX;
-		const previousMinY = this.minY;
-		const previousMaxX = this.maxX;
-		const previousMaxY = this.maxY;
+		const previousPositionX = this.positionX;
+		const previousPositionY = this.positionY;
+		const previousRadius = this.radius;
 
-		if (this.left instanceof Particle) {
-			this.minX = this.left.sharedProperties.positionX - this.left.radius;
-			this.minY = this.left.sharedProperties.positionY - this.left.radius;
-			this.maxX = this.left.sharedProperties.positionX + this.left.radius;
-			this.maxY = this.left.sharedProperties.positionX + this.left.radius;
-		} else {
-			this.minX = this.left.minX;
-			this.minY = this.left.minY;
-			this.maxX = this.left.maxX;
-			this.maxY = this.left.maxY;
-		}
+		const left = this.left instanceof Particle ? this.left.sharedProperties : this.left;
+		const right = this.right instanceof Particle ? this.right.sharedProperties : this.right;
 
-		if (this.right instanceof Particle) {
-			this.minX = Math.min(this.minX, this.right.sharedProperties.positionX - this.right.radius);
-			this.minY = Math.min(this.minY, this.right.sharedProperties.positionY - this.right.radius);
-			this.maxX = Math.max(this.maxX, this.right.sharedProperties.positionX + this.right.radius);
-			this.maxY = Math.max(this.maxY, this.right.sharedProperties.positionY + this.right.radius);
-		} else {
-			this.minX = Math.min(this.minX, this.right.minX);
-			this.minY = Math.min(this.minY, this.right.minY);
-			this.maxX = Math.max(this.maxX, this.right.maxX);
-			this.maxY = Math.max(this.maxY, this.right.maxY);
-		}
+		// Taking an average point between the centers of the two circles
+		this.positionX = left.positionX + ((right.positionX - left.positionX) / 2);
+		this.positionY = left.positionY + ((right.positionY - left.positionY) / 2);
 
-		if (previousMinX != this.minX
-			|| previousMinY != this.minY
-			|| previousMaxX != this.maxX
-			|| previousMaxY != this.maxY
+		// Approximating the radius from the distance between the two circles
+		const deltaX = left.positionX - right.positionX;
+		const deltaY = left.positionY - right.positionY;
+		const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+		this.radius = (distance / 2) + Math.max(left.radius, right.radius);
+
+		if (previousPositionX != this.positionX
+			|| previousPositionY != this.positionY
+			|| previousRadius != this.radius
 		) {
 			this.parentCluster?.updateBoundaries();
 		}
 	}
 
 	public distance(particle: Particle): number {
-		const centerX = this.maxX = this.minX;
-		const centerY = this.maxY = this.minY;
-		const deltaX = centerX - particle.sharedProperties.positionX;
-		const deltaY = centerY - particle.sharedProperties.positionY;
+		const deltaX = this.positionX - particle.sharedProperties.positionX;
+		const deltaY = this.positionY - particle.sharedProperties.positionY;
 		return Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 	}
 
 	public doesCollide(particle: Particle): boolean {
-		return (
-			(
-				particle.sharedProperties.positionX + particle.radius > this.minX
-				|| particle.sharedProperties.positionX - particle.radius < this.maxX
-			) && (
-				particle.sharedProperties.positionY + particle.radius > this.minY
-				|| particle.sharedProperties.positionY - particle.radius < this.maxY
-			)
-		);
+		const distance = this.distance(particle);
+		if (distance >= (this.radius + particle.sharedProperties.radius)) {
+			return false
+		}
+
+		return true;
 	}
 }

@@ -6,7 +6,6 @@ export const MIN_VELOCITY_PER_SECOND = 0.01;
 
 export class Particle {
 	public sharedProperties: SharedParticleProperties;
-	public radius: number;
 	public parentCluster: Cluster | null = null;
 
 	public velocityXPerSecond: number = 0;
@@ -20,8 +19,7 @@ export class Particle {
 		type: ParticleType,
 		radius: number,
 	) {
-		this.sharedProperties = new SharedParticleProperties(positionX, positionY, type);
-		this.radius = radius;
+		this.sharedProperties = new SharedParticleProperties(positionX, positionY, radius, type);
 	}
 
 	/**
@@ -50,7 +48,7 @@ export class Particle {
 		}
 
 		const distance = this.distance(particle);
-		if (distance >= (this.radius * 2)) {
+		if (distance >= (this.sharedProperties.radius + particle.sharedProperties.radius)) {
 			return false
 		}
 
