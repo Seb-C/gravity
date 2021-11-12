@@ -1,50 +1,47 @@
 import { Particle } from './particle';
-import { SharedParticleProperties } from '../common/shared-particle-properties';
-
-export type Node = Cluster | Particle;
 
 export class RootCluster {
-	public root: Node | null;
+	public root: Cluster | Node | null;
+	public allNodes: Node[];
 	public allParticles: Particle[];
-	public allSharedParticles: SharedParticleProperties[];
 
 	constructor() {
 		this.root = null;
+		this.allNodes = [];
 		this.allParticles = [];
-		this.allSharedParticles = [];
 	}
 
-	public add(particle: Particle) {
-		this.allParticles.push(particle);
-		this.allSharedParticles.push(particle.sharedProperties);
-		this.addToTree(particle);
+	public add(node: Node) {
+		this.allNodes.push(node);
+		this.allParticles.push(node.particle);
+		this.addToTree(node);
 	}
 
-	public addToTree(particle: Particle) {
+	public addToTree(node: Node) {
 		if (this.root === null) {
-			this.root = particle;
+			this.root = node;
 			return;
 		}
 
-		if (this.root instanceof Particle) {
-			this.root = Cluster.createAndSetParents(this.root, particle, null);
+		if (this.root instanceof Node) {
+			this.root = Cluster.createAndSetParents(this.root, node, null);
 			return;
 		}
 
 		let currentCluster: Cluster = this.root;
 		while (true) {
-			const distanceLeft = currentCluster.left.distance(particle);
-			const distanceRight = currentCluster.right.distance(particle);
+			const distanceLeft = currentCluster.left.distance(node);
+			const distanceRight = currentCluster.right.distance(node);
 			if (distanceLeft <= distanceRight) {
-				if (currentCluster.left instanceof Particle) {
-					currentCluster.left = Cluster.createAndSetParents(currentCluster.left, particle, currentCluster);
+				if (currentCluster.left instanceof Node) {
+					currentCluster.left = Cluster.createAndSetParents(currentCluster.left, node, currentCluster);
 					return;
 				} else {
 					currentCluster = currentCluster.left;
 				}
 			} else {
-				if (currentCluster.right instanceof Particle) {
-					currentCluster.right = Cluster.createAndSetParents(currentCluster.right, particle, currentCluster);
+				if (currentCluster.right instanceof Node) {
+					currentCluster.right = Cluster.createAndSetParents(currentCluster.right, node, currentCluster);
 					return;
 				} else {
 					currentCluster = currentCluster.right;
@@ -53,101 +50,101 @@ export class RootCluster {
 		}
 	}
 
-	public remove(particle: Particle, index: number) {
+	public remove(node: Node, index: number) {
+		this.allNodes.splice(index, 1);
 		this.allParticles.splice(index, 1);
-		this.allSharedParticles.splice(index, 1);
-		this.removeFromTree(particle);
+		this.removeFromTree(node);
 	}
 
-	public removeFromTree(particle: Particle) {
-		if (particle === this.root) {
-			particle.parentCluster = null;
+	public removeFromTree(node: Node) {
+		if (node === this.root) {
+			node.parentCluster = null;
 			this.root = null;
 			return;
 		}
-		if (particle.parentCluster == null) {
-			// The particle may not belong to this tree
+		if (node.parentCluster == null) {
+			// The node may not belong to this tree
 			return;
 		}
 
-		const parentOfParentCluster = particle.parentCluster?.parentCluster;
-		if (!parentOfParentCluster && this.root != particle.parentCluster) {
+		const parentOfParentCluster = node.parentCluster?.parentCluster;
+		if (!parentOfParentCluster && this.root != node.parentCluster) {
 			throw new Error(`The cluster is not root, but it's parentCluster is null.`);
 		}
 
-		if (particle == particle.parentCluster.left) {
+		if (node == node.parentCluster.left) {
 			if (parentOfParentCluster == null) {
-				this.root = particle.parentCluster.right;
+				this.root = node.parentCluster.right;
 				this.root.parentCluster = null;
-			} else if (particle.parentCluster == parentOfParentCluster.left) {
-				parentOfParentCluster.left = particle.parentCluster.right;
+			} else if (node.parentCluster == parentOfParentCluster.left) {
+				parentOfParentCluster.left = node.parentCluster.right;
 				parentOfParentCluster.left.parentCluster = parentOfParentCluster;
-			} else if (particle.parentCluster == parentOfParentCluster.right) {
-				parentOfParentCluster.right = particle.parentCluster.right;
+			} else if (node.parentCluster == parentOfParentCluster.right) {
+				parentOfParentCluster.right = node.parentCluster.right;
 				parentOfParentCluster.right.parentCluster = parentOfParentCluster;
 			}
-		} else if (particle == particle.parentCluster.right) {
+		} else if (node == node.parentCluster.right) {
 			if (parentOfParentCluster == null) {
-				this.root = particle.parentCluster.left;
+				this.root = node.parentCluster.left;
 				this.root.parentCluster = null;
-			} else if (particle.parentCluster == parentOfParentCluster.left) {
-				parentOfParentCluster.left = particle.parentCluster.left;
+			} else if (node.parentCluster == parentOfParentCluster.left) {
+				parentOfParentCluster.left = node.parentCluster.left;
 				parentOfParentCluster.left.parentCluster = parentOfParentCluster;
-			} else if (particle.parentCluster == parentOfParentCluster.right) {
-				parentOfParentCluster.right = particle.parentCluster.left;
+			} else if (node.parentCluster == parentOfParentCluster.right) {
+				parentOfParentCluster.right = node.parentCluster.left;
 				parentOfParentCluster.right.parentCluster = parentOfParentCluster;
 			}
 		}
 
-		particle.parentCluster = null;
+		node.parentCluster = null;
 	}
 
 	public tick(elapsedSeconds: number) {
-		for (let i = 0; i < this.allParticles.length; i++) {
-			const particle = this.allParticles[i];
-			if (particle.move(elapsedSeconds)) {
-				this.removeFromTree(particle);
-				this.addToTree(particle);
+		for (let i = 0; i < this.allNodes.length; i++) {
+			const node = this.allNodes[i];
+			if (node.particle.move(elapsedSeconds)) {
+				this.removeFromTree(node);
+				this.addToTree(node);
 			}
 
-			const collidedParticle = this.searchCollision(particle);
-			if (collidedParticle !== null) {
-				particle.updateVelocityFromCollision(collidedParticle);
+			const collidedNode = this.searchCollision(node);
+			if (collidedNode !== null) {
+				node.particle.updateVelocityFromCollision(collidedNode.particle);
 			}
 		}
 	}
 
 	/**
-	 * Searches in the tree if the given particle collides with any other.
-	 * If it does, then the other particle will be returned.
+	 * Searches in the tree if the given node collides with any other.
+	 * If it does, then the other node will be returned.
 	 */
-	public searchCollision(particle: Particle): Particle | null {
+	public searchCollision(node: Node): Node | null {
 		if (this.root === null) {
 			return null;
 		}
 
-		if (this.root instanceof Particle) {
-			if (this.root.doesCollide(particle)) {
+		if (this.root instanceof Node) {
+			if (this.root.particle.doesCollide(node.particle)) {
 				return this.root;
 			} else {
 				return null;
 			}
 		}
 
-		if (!this.root.doesCollide(particle)) {
+		if (!this.root.doesCollide(node)) {
 			return null;
 		}
 
 		let currentNode: Cluster = this.root;
 		while (true) {
-			if (currentNode.left.doesCollide(particle)) {
-				if (currentNode.left instanceof Particle) {
+			if (currentNode.left.doesCollide(node)) {
+				if (currentNode.left instanceof Node) {
 					return currentNode.left;
 				} else {
 					currentNode = currentNode.left;
 				}
-			} else if (currentNode.right.doesCollide(particle)) {
-				if (currentNode.right instanceof Particle) {
+			} else if (currentNode.right.doesCollide(node)) {
+				if (currentNode.right instanceof Node) {
 					return currentNode.right;
 				} else {
 					currentNode = currentNode.right;
@@ -160,15 +157,15 @@ export class RootCluster {
 }
 
 export class Cluster {
-	public left: Node;
-	public right: Node;
+	public left: Cluster | Node;
+	public right: Cluster | Node;
 	public parentCluster: Cluster | null;
 
 	public positionX!: number;
 	public positionY!: number;
 	public radius!: number;
 
-	constructor(left: Node, right: Node, parentCluster: Cluster | null) {
+	constructor(left: Cluster | Node, right: Cluster | Node, parentCluster: Cluster | null) {
 		this.left = left;
 		this.right = right;
 		this.parentCluster = parentCluster;
@@ -176,8 +173,8 @@ export class Cluster {
 	}
 
 	public static createAndSetParents(
-		left: Node,
-		right: Node,
+		left: Cluster | Node,
+		right: Cluster | Node,
 		parentCluster: Cluster | null,
 	): Cluster {
 		const cluster = new Cluster(left, right, parentCluster);
@@ -191,8 +188,8 @@ export class Cluster {
 		const previousPositionY = this.positionY;
 		const previousRadius = this.radius;
 
-		const left = this.left instanceof Particle ? this.left.sharedProperties : this.left;
-		const right = this.right instanceof Particle ? this.right.sharedProperties : this.right;
+		const left = this.left instanceof Node ? this.left.particle : this.left;
+		const right = this.right instanceof Node ? this.right.particle : this.right;
 
 		// Taking an average point between the centers of the two circles
 		this.positionX = left.positionX + ((right.positionX - left.positionX) / 2);
@@ -212,18 +209,36 @@ export class Cluster {
 		}
 	}
 
-	public distance(particle: Particle): number {
-		const deltaX = this.positionX - particle.sharedProperties.positionX;
-		const deltaY = this.positionY - particle.sharedProperties.positionY;
+	public distance(node: Node): number {
+		const deltaX = this.positionX - node.particle.positionX;
+		const deltaY = this.positionY - node.particle.positionY;
 		return Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 	}
 
-	public doesCollide(particle: Particle): boolean {
-		const distance = this.distance(particle);
-		if (distance >= (this.radius + particle.sharedProperties.radius)) {
+	public doesCollide(node: Node): boolean {
+		const distance = this.distance(node);
+		if (distance >= (this.radius + node.particle.radius)) {
 			return false
 		}
 
 		return true;
+	}
+}
+
+export class Node {
+	public particle: Particle;
+	public parentCluster: Cluster | null = null;
+
+	constructor(particle: Particle) {
+		this.particle = particle;
+		this.parentCluster = this.parentCluster;
+	}
+
+	public distance(node: Node): number {
+		return this.particle.distance(node.particle);
+	}
+
+	public doesCollide(node: Node): boolean {
+		return this.particle.doesCollide(node.particle);
 	}
 }

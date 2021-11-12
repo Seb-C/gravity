@@ -1,6 +1,6 @@
 import { Config } from '../common/config';
 import { Particle } from './particle';
-import { RootCluster } from './cluster';
+import { RootCluster, Node } from './cluster';
 
 self.addEventListener('message', (event: any) => {
 	switch (event.data?.type) {
@@ -17,14 +17,14 @@ self.postMessage({ type: 'ready' });
 function init(config: Config) {
 	const rootCluster = new RootCluster();
 	for (let i = 0; i < config.particles.amount; i++) {
-		rootCluster.add(
+		rootCluster.add(new Node(
 			new Particle(
 				config.canvas.width * Math.random(),
 				config.canvas.height * Math.random(),
 				config.particles.types[Math.floor(Math.random() * config.particles.types.length)],
 				config.particles.radius,
 			),
-		);
+		));
 	}
 
 	let lastTick = +new Date();
@@ -36,7 +36,7 @@ function init(config: Config) {
 
 		postMessage({
 			type: 'particles',
-			particles: rootCluster.allSharedParticles,
+			particles: rootCluster.allParticles,
 		});
 	}, 5);
 }

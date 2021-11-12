@@ -1,8 +1,8 @@
 import { Config } from '../common/config';
 import { ParticleType } from './particle-type';
-import { SharedParticleProperties } from '../common/shared-particle-properties';
+import { ParticleInterface } from '../common/particle-interface';
 
-let particles: SharedParticleProperties[] = [];
+let particles: ParticleInterface[] = [];
 
 const engine = new Worker('./static/engine.js');
 engine.addEventListener('message', (event: MessageEvent) => {

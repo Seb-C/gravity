@@ -1,12 +1,14 @@
 import { ParticleType } from '../common/particle-type';
-import { SharedParticleProperties } from '../common/shared-particle-properties';
+import { ParticleInterface } from '../common/particle-interface';
 import { Cluster } from './cluster';
 
 export const MIN_VELOCITY_PER_SECOND = 0.01;
 
-export class Particle {
-	public sharedProperties: SharedParticleProperties;
-	public parentCluster: Cluster | null = null;
+export class Particle implements ParticleInterface {
+	public positionX: number;
+	public positionY: number;
+	public typeIndex: number;
+	public radius: number;
 
 	public velocityXPerSecond: number = 0;
 	public velocityYPerSecond: number = 0;
@@ -19,7 +21,10 @@ export class Particle {
 		type: ParticleType,
 		radius: number,
 	) {
-		this.sharedProperties = new SharedParticleProperties(positionX, positionY, radius, type);
+		this.positionX = positionX;
+		this.positionY = positionY;
+		this.typeIndex = type.index;
+		this.radius = radius;
 	}
 
 	/**
@@ -33,8 +38,8 @@ export class Particle {
 			return false;
 		}
 
-		this.sharedProperties.positionX += elapsedSeconds * this.velocityXPerSecond;
-		this.sharedProperties.positionY += elapsedSeconds * this.velocityYPerSecond;
+		this.positionX += elapsedSeconds * this.velocityXPerSecond;
+		this.positionY += elapsedSeconds * this.velocityYPerSecond;
 
 		const velocityDecreaseRate = this.decelerationRatePerSecond * elapsedSeconds;
 		this.velocityXPerSecond *= 1 - velocityDecreaseRate;
@@ -48,7 +53,7 @@ export class Particle {
 		}
 
 		const distance = this.distance(particle);
-		if (distance >= (this.sharedProperties.radius + particle.sharedProperties.radius)) {
+		if (distance >= (this.radius + particle.radius)) {
 			return false
 		}
 
@@ -56,13 +61,13 @@ export class Particle {
 	}
 
 	public updateVelocityFromCollision(particle: Particle) {
-		this.velocityXPerSecond += this.sharedProperties.positionX - particle.sharedProperties.positionX;
-		this.velocityYPerSecond += this.sharedProperties.positionY - particle.sharedProperties.positionY;
+		this.velocityXPerSecond += this.positionX - particle.positionX;
+		this.velocityYPerSecond += this.positionY - particle.positionY;
 	}
 
 	public distance(particle: Particle): number {
-		const deltaX = this.sharedProperties.positionX - particle.sharedProperties.positionX;
-		const deltaY = this.sharedProperties.positionY - particle.sharedProperties.positionY;
+		const deltaX = this.positionX - particle.positionX;
+		const deltaY = this.positionY - particle.positionY;
 		return Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 	}
 }
