@@ -1,6 +1,5 @@
 import { ParticleType } from '../common/particle-type';
 import { ParticleInterface } from '../common/particle-interface';
-import { Cluster } from './cluster';
 
 export const MIN_VELOCITY_PER_SECOND = 0.01;
 

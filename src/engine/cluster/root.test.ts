@@ -1,9 +1,11 @@
 import "jasmine";
-import { Cluster, RootCluster, Node } from './cluster';
-import { Particle } from './particle';
-import { ParticleType } from '../common/particle-type';
+import { Cluster } from './cluster';
+import { Root } from './root';
+import { Node } from './node';
+import { Particle } from '../particle';
+import { ParticleType } from '../../common/particle-type';
 
-describe('RootCluster', () => {
+describe('Root', () => {
 	describe('removeFromTree', () => {
 		const type: ParticleType = { index: 1 };
 
@@ -15,7 +17,7 @@ describe('RootCluster', () => {
 			const clusterB = Cluster.createAndSetParents(nodeA, nodeB, null);
 			const clusterA = Cluster.createAndSetParents(clusterB, nodeC, null);
 
-			const rootCluster = new RootCluster();
+			const rootCluster = new Root();
 			rootCluster.root = clusterA;
 
 			return { nodeA, nodeB, nodeC, clusterA, clusterB, rootCluster };
@@ -28,7 +30,7 @@ describe('RootCluster', () => {
 			const clusterB = Cluster.createAndSetParents(nodeB, nodeC, null);
 			const clusterA = Cluster.createAndSetParents(nodeA, clusterB, null);
 
-			const rootCluster = new RootCluster();
+			const rootCluster = new Root();
 			rootCluster.root = clusterA;
 
 			return { nodeA, nodeB, nodeC, clusterA, clusterB, rootCluster };
@@ -39,7 +41,7 @@ describe('RootCluster', () => {
 
 			const cluster = Cluster.createAndSetParents(nodeA, nodeB, null);
 
-			const rootCluster = new RootCluster();
+			const rootCluster = new Root();
 			rootCluster.root = cluster;
 
 			return { nodeA, nodeB, cluster, rootCluster };
@@ -111,7 +113,7 @@ describe('RootCluster', () => {
 		});
 		it('root', () => {
 			const node = new Node(new Particle(0, 0, type, 1));
-			const rootCluster = new RootCluster();
+			const rootCluster = new Root();
 			rootCluster.root = node;
 			rootCluster.removeFromTree(node);
 
