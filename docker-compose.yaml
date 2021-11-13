@@ -11,5 +11,6 @@ services:
     image: nginx:alpine
     volumes:
       - $PWD:/usr/share/nginx/html
+      - $PWD/nginx:/etc/nginx/templates
     ports:
       - "80:80"
