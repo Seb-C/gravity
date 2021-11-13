@@ -1,4 +1,4 @@
-import { ParticleType } from './particle-type';
+import { SharedParticleType } from './shared-particle-type';
 
 export interface Config {
 	canvas: {
@@ -8,6 +8,6 @@ export interface Config {
 	particles: {
 		radius: number,
 		amount: number,
-		types: ParticleType[],
+		types: SharedParticleType[],
 	},
 }

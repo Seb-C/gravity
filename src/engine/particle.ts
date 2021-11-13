@@ -1,4 +1,4 @@
-import { ParticleType } from '../common/particle-type';
+import { SharedParticleType } from '../common/shared-particle-type';
 import { ParticleInterface } from '../common/particle-interface';
 
 export const MIN_VELOCITY_PER_SECOND = 0.01;
@@ -17,7 +17,7 @@ export class Particle implements ParticleInterface {
 	constructor(
 		positionX: number,
 		positionY: number,
-		type: ParticleType,
+		type: SharedParticleType,
 		radius: number,
 	) {
 		this.positionX = positionX;

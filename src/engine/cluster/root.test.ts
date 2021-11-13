@@ -3,12 +3,12 @@ import { Cluster } from './cluster';
 import { Root } from './root';
 import { Node } from './node';
 import { Particle } from '../particle';
-import { ParticleType } from '../../common/particle-type';
+import { SharedParticleType } from '../../common/shared-particle-type';
 import { SharedBuffers, SharedData } from '../../common/shared-data';
 
 describe('Root', () => {
 	describe('removeFromTree', () => {
-		const type: ParticleType = { index: 1 };
+		const type: SharedParticleType = { index: 1 };
 		const mockedSharedData: SharedData = <any>{};
 
 		const createLeftTree = () => {
