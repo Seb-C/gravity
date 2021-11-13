@@ -2,6 +2,7 @@ import { Config } from '../common/config';
 import { Particle } from './particle';
 import { Root } from './cluster/root';
 import { Node } from './cluster/node';
+import { SharedBuffers, SharedData } from '../common/shared-data';
 
 self.addEventListener('message', (event: any) => {
 	switch (event.data?.type) {
@@ -16,9 +17,12 @@ self.addEventListener('message', (event: any) => {
 self.postMessage({ type: 'ready' });
 
 function init(config: Config) {
-	const rootCluster = new Root();
+	const sharedBuffers = new SharedBuffers(config.particles.amount);
+	const sharedData = new SharedData(sharedBuffers);
+	const rootCluster = new Root(sharedData);
 	for (let i = 0; i < config.particles.amount; i++) {
 		rootCluster.add(
+			i,
 			new Node(
 				new Particle(
 					config.canvas.width * Math.random(),
@@ -30,16 +34,16 @@ function init(config: Config) {
 		);
 	}
 
+	postMessage({
+		type: 'buffers',
+		buffers: sharedBuffers,
+	});
+
 	let lastTick = +new Date();
 	setInterval(() => {
 		const thisTick = +new Date();
 		const elapsedSeconds = (thisTick - lastTick) / 1000;
 		rootCluster.tick(elapsedSeconds);
 		lastTick = thisTick;
-
-		postMessage({
-			type: 'particles',
-			particles: rootCluster.allParticles,
-		});
 	}, 5);
 }

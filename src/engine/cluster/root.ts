@@ -1,23 +1,24 @@
 import { Particle } from '../particle';
 import { Node } from './node';
 import { Cluster } from './cluster';
+import { SharedBuffers, SharedData } from '../../common/shared-data';
 
 export type TreeAble = Cluster | Node;
 
 export class Root {
 	public root: TreeAble | null;
 	public allNodes: Node[];
-	public allParticles: Particle[];
+	public sharedData: SharedData;
 
-	constructor() {
+	constructor(sharedData: SharedData) {
 		this.root = null;
 		this.allNodes = [];
-		this.allParticles = [];
+		this.sharedData = sharedData;
 	}
 
-	public add(node: Node) {
-		this.allNodes.push(node);
-		this.allParticles.push(node.particle);
+	public add(index: number, node: Node) {
+		this.sharedData.set(index, node.particle);
+		this.allNodes[index] = node;
 		this.addToTree(node);
 	}
 
@@ -53,12 +54,6 @@ export class Root {
 				}
 			}
 		}
-	}
-
-	public remove(node: Node, index: number) {
-		this.allNodes.splice(index, 1);
-		this.allParticles.splice(index, 1);
-		this.removeFromTree(node);
 	}
 
 	public removeFromTree(node: Node) {
@@ -108,6 +103,7 @@ export class Root {
 		for (let i = 0; i < this.allNodes.length; i++) {
 			const node = this.allNodes[i];
 			if (node.particle.move(elapsedSeconds)) {
+				this.sharedData.set(i, node.particle);
 				this.removeFromTree(node);
 				this.addToTree(node);
 			}

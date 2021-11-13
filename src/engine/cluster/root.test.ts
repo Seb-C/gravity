@@ -4,10 +4,12 @@ import { Root } from './root';
 import { Node } from './node';
 import { Particle } from '../particle';
 import { ParticleType } from '../../common/particle-type';
+import { SharedBuffers, SharedData } from '../../common/shared-data';
 
 describe('Root', () => {
 	describe('removeFromTree', () => {
 		const type: ParticleType = { index: 1 };
+		const mockedSharedData: SharedData = <any>{};
 
 		const createLeftTree = () => {
 			const nodeA = new Node(new Particle(0, 0, type, 1));
@@ -17,7 +19,7 @@ describe('Root', () => {
 			const clusterB = Cluster.createAndSetParents(nodeA, nodeB, null);
 			const clusterA = Cluster.createAndSetParents(clusterB, nodeC, null);
 
-			const rootCluster = new Root();
+			const rootCluster = new Root(mockedSharedData);
 			rootCluster.root = clusterA;
 
 			return { nodeA, nodeB, nodeC, clusterA, clusterB, rootCluster };
@@ -30,7 +32,7 @@ describe('Root', () => {
 			const clusterB = Cluster.createAndSetParents(nodeB, nodeC, null);
 			const clusterA = Cluster.createAndSetParents(nodeA, clusterB, null);
 
-			const rootCluster = new Root();
+			const rootCluster = new Root(mockedSharedData);
 			rootCluster.root = clusterA;
 
 			return { nodeA, nodeB, nodeC, clusterA, clusterB, rootCluster };
@@ -41,7 +43,7 @@ describe('Root', () => {
 
 			const cluster = Cluster.createAndSetParents(nodeA, nodeB, null);
 
-			const rootCluster = new Root();
+			const rootCluster = new Root(mockedSharedData);
 			rootCluster.root = cluster;
 
 			return { nodeA, nodeB, cluster, rootCluster };
@@ -113,7 +115,7 @@ describe('Root', () => {
 		});
 		it('root', () => {
 			const node = new Node(new Particle(0, 0, type, 1));
-			const rootCluster = new Root();
+			const rootCluster = new Root(mockedSharedData);
 			rootCluster.root = node;
 			rootCluster.removeFromTree(node);
 
