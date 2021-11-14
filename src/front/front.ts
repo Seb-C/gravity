@@ -28,13 +28,13 @@ function createConfig() {
 	particleTypes = new Array(100);
 	config = {
 		canvas: {
-			width: 500,
-			height: 400,
+			width: 1000,
+			height: 800,
 		},
 		particles: {
 			texturePrecision: 64,
-			amount: 300,
-			radius: 20,
+			amount: 10000,
+			radius: 4,
 			types: sharedParticleTypes,
 		},
 	};
@@ -130,21 +130,21 @@ function startRenderingProcess() {
 
 	const positionXBuffer = gl.createBuffer();
 	gl.bindBuffer(gl.ARRAY_BUFFER, positionXBuffer);
-	gl.bufferData(gl.ARRAY_BUFFER, sharedData.positionsX, gl.STATIC_DRAW);
+	gl.bufferData(gl.ARRAY_BUFFER, sharedData.positionsX, gl.DYNAMIC_DRAW);
 	const positionXAttribute = gl.getAttribLocation(program, "positionX");
 	gl.enableVertexAttribArray(positionXAttribute);
 	gl.vertexAttribPointer(positionXAttribute, 1, gl.FLOAT, false, 0, 0);
 
 	const positionYBuffer = gl.createBuffer();
 	gl.bindBuffer(gl.ARRAY_BUFFER, positionYBuffer);
-	gl.bufferData(gl.ARRAY_BUFFER, sharedData.positionsY, gl.STATIC_DRAW);
+	gl.bufferData(gl.ARRAY_BUFFER, sharedData.positionsY, gl.DYNAMIC_DRAW);
 	const positionYAttribute = gl.getAttribLocation(program, "positionY");
 	gl.enableVertexAttribArray(positionYAttribute);
 	gl.vertexAttribPointer(positionYAttribute, 1, gl.FLOAT, false, 0, 0);
 
 	const typeIndexBuffer = gl.createBuffer();
 	gl.bindBuffer(gl.ARRAY_BUFFER, typeIndexBuffer);
-	gl.bufferData(gl.ARRAY_BUFFER, sharedData.typeIndexes, gl.STATIC_DRAW);
+	gl.bufferData(gl.ARRAY_BUFFER, sharedData.typeIndexes, gl.DYNAMIC_DRAW);
 	const typeIndexAttribute = gl.getAttribLocation(program, "typeIndex");
 	gl.enableVertexAttribArray(typeIndexAttribute);
 	gl.vertexAttribPointer(typeIndexAttribute, 1, gl.FLOAT, false, 0, 0);
@@ -159,6 +159,18 @@ function startRenderingProcess() {
 		gl.drawArrays(gl.POINTS, 0, sharedData.buffers.currentLength);
 
 		window.requestAnimationFrame(draw);
+
+		// Update the buffers asynchronously between the frames
+		setTimeout(() => {
+			gl.bindBuffer(gl.ARRAY_BUFFER, positionXBuffer);
+			gl.bufferData(gl.ARRAY_BUFFER, sharedData.positionsX, gl.DYNAMIC_DRAW);
+
+			gl.bindBuffer(gl.ARRAY_BUFFER, positionYBuffer);
+			gl.bufferData(gl.ARRAY_BUFFER, sharedData.positionsY, gl.DYNAMIC_DRAW);
+
+			gl.bindBuffer(gl.ARRAY_BUFFER, typeIndexBuffer);
+			gl.bufferData(gl.ARRAY_BUFFER, sharedData.typeIndexes, gl.DYNAMIC_DRAW);
+		}, 0);
 	}
 	window.requestAnimationFrame(draw);
 }
