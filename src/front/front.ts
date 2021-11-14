@@ -73,8 +73,8 @@ function startRenderingProcess() {
 
 			context.drawImage(
 				type.image,
-				x - radius,
-				y - radius,
+				x - radius + (config.canvas.width / 2),
+				y - radius + (config.canvas.height / 2),
 				radius * 2,
 				radius * 2,
 			);
@@ -101,12 +101,14 @@ function startRenderingProcess() {
 	webglCanvas.height = config.canvas.height;
 	document.body.appendChild(webglCanvas);
 
-	// TODO uniform for point size
 	// TODO translate particle position for display
 	// TODO refresh buffers?
 
 	const vertexShaderScript = `
 		#define particleTypesCount ${particleTypes.length}
+		#define canvasWidth ${config.canvas.width}
+		#define canvasHeight ${config.canvas.height}
+
 		attribute float positionX;
 		attribute float positionY;
 		attribute float typeIndex;
@@ -116,8 +118,8 @@ function startRenderingProcess() {
 		varying mediump vec3 particleColor;
 
 		void main(void) {
-			gl_Position = vec4(positionX, positionY, 0.0, 1.0);
-			gl_PointSize = 10.0;
+			gl_Position = vec4(positionX / float(canvasWidth), positionY / float(canvasHeight), 0.0, 1.0);
+			gl_PointSize = float(${config.particles.radius*2});
 			particleColor = particleTypeColors[int(typeIndex)];
 		}
 	`;
@@ -174,14 +176,14 @@ function startRenderingProcess() {
 
 	const positionXBuffer = webgl.createBuffer();
 	webgl.bindBuffer(webgl.ARRAY_BUFFER, positionXBuffer);
-	webgl.bufferData(webgl.ARRAY_BUFFER, new Float32Array([-0.5, +0.5, 0.0]), webgl.STATIC_DRAW);
+	webgl.bufferData(webgl.ARRAY_BUFFER, new Float32Array([-100, 0, 100]), webgl.STATIC_DRAW);
 	const positionXAttribute = webgl.getAttribLocation(program, "positionX");
 	webgl.enableVertexAttribArray(positionXAttribute);
 	webgl.vertexAttribPointer(positionXAttribute, 1, webgl.FLOAT, false, 0, 0);
 
 	const positionYBuffer = webgl.createBuffer();
 	webgl.bindBuffer(webgl.ARRAY_BUFFER, positionYBuffer);
-	webgl.bufferData(webgl.ARRAY_BUFFER, new Float32Array([-0.5, -0.5, 0.0]), webgl.STATIC_DRAW);
+	webgl.bufferData(webgl.ARRAY_BUFFER, new Float32Array([-100, 0, -100]), webgl.STATIC_DRAW);
 	const positionYAttribute = webgl.getAttribLocation(program, "positionY");
 	webgl.enableVertexAttribArray(positionYAttribute);
 	webgl.vertexAttribPointer(positionYAttribute, 1, webgl.FLOAT, false, 0, 0);

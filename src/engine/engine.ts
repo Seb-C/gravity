@@ -25,8 +25,8 @@ function init(config: Config) {
 			i,
 			new Node(
 				new Particle(
-					config.canvas.width * Math.random(),
-					config.canvas.height * Math.random(),
+					config.canvas.width * Math.random() - (config.canvas.width / 2),
+					config.canvas.height * Math.random() - (config.canvas.height / 2),
 					config.particles.types[Math.floor(Math.random() * config.particles.types.length)],
 					config.particles.radius,
 				),
