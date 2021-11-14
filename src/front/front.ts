@@ -43,7 +43,9 @@ function createConfig() {
 		particleTypes[i] = new ParticleType(
 			sharedParticleTypes[i],
 			config.particles.radius,
-			`rgb(${Math.random()*255}, ${Math.random()*255}, ${Math.random()*255})`,
+			Math.random(),
+			Math.random(),
+			Math.random(),
 		);
 	}
 
@@ -99,20 +101,32 @@ function startRenderingProcess() {
 	webglCanvas.height = config.canvas.height;
 	document.body.appendChild(webglCanvas);
 
+	// TODO uniform for point size
+	// TODO translate particle position for display
+	// TODO refresh buffers?
+
 	const vertexShaderScript = `
-		attribute float a_position_x;
-		attribute float a_position_y;
+		#define particleTypesCount ${particleTypes.length}
+		attribute float positionX;
+		attribute float positionY;
+		attribute float typeIndex;
+
+		uniform vec3 particleTypeColors[particleTypesCount];
+
+		varying mediump vec3 particleColor;
 
 		void main(void) {
-			gl_Position = vec4(a_position_x, a_position_y, 0.0, 1.0);
+			gl_Position = vec4(positionX, positionY, 0.0, 1.0);
 			gl_PointSize = 10.0;
+			particleColor = particleTypeColors[int(typeIndex)];
 		}
 	`;
 	const fragmentShaderScript = `
-		uniform sampler2D uSampler;
+		uniform sampler2D particleTexture;
+		varying mediump vec3 particleColor;
 
 		void main(void) {
-			gl_FragColor = texture2D(uSampler, gl_PointCoord);
+			gl_FragColor = vec4(particleColor, 1.0) * texture2D(particleTexture, gl_PointCoord);
 		}
 	`;
 
@@ -144,27 +158,40 @@ function startRenderingProcess() {
 	}
 	webgl.useProgram(program);
 
+	ParticleType.createWebGLTexture(webgl);
+	webgl.activeTexture(webgl.TEXTURE0);
+	webgl.bindTexture(webgl.TEXTURE_2D, ParticleType.webglTexture!);
+	webgl.uniform1i(webgl.getUniformLocation(program, 'particleTexture'), 0);
+
+	const particleTypeColors = new Float32Array(particleTypes.length*3);
 	for (let i = 0; i < particleTypes.length; i++) {
-		particleTypes[i].createWebGLTexture(webgl);
+		particleTypeColors[i*3+0] = particleTypes[i].colorRed;
+		particleTypeColors[i*3+1] = particleTypes[i].colorGreen;
+		particleTypeColors[i*3+2] = particleTypes[i].colorBlue;
 	}
+	const particleTypeColorsUniform = webgl.getUniformLocation(program, "particleTypeColors");
+	webgl.uniform3fv(particleTypeColorsUniform, particleTypeColors);
 
 	const positionXBuffer = webgl.createBuffer();
 	webgl.bindBuffer(webgl.ARRAY_BUFFER, positionXBuffer);
 	webgl.bufferData(webgl.ARRAY_BUFFER, new Float32Array([-0.5, +0.5, 0.0]), webgl.STATIC_DRAW);
-	const positionXAttribute = webgl.getAttribLocation(program, "a_position_x");
+	const positionXAttribute = webgl.getAttribLocation(program, "positionX");
 	webgl.enableVertexAttribArray(positionXAttribute);
 	webgl.vertexAttribPointer(positionXAttribute, 1, webgl.FLOAT, false, 0, 0);
 
 	const positionYBuffer = webgl.createBuffer();
 	webgl.bindBuffer(webgl.ARRAY_BUFFER, positionYBuffer);
 	webgl.bufferData(webgl.ARRAY_BUFFER, new Float32Array([-0.5, -0.5, 0.0]), webgl.STATIC_DRAW);
-	const positionYAttribute = webgl.getAttribLocation(program, "a_position_y");
+	const positionYAttribute = webgl.getAttribLocation(program, "positionY");
 	webgl.enableVertexAttribArray(positionYAttribute);
 	webgl.vertexAttribPointer(positionYAttribute, 1, webgl.FLOAT, false, 0, 0);
 
-	webgl.activeTexture(webgl.TEXTURE0);
-	webgl.bindTexture(webgl.TEXTURE_2D, particleTypes[0].webglTexture!);
-	webgl.uniform1i(webgl.getUniformLocation(program, 'uSampler'), 0);
+	const typeIndexBuffer = webgl.createBuffer();
+	webgl.bindBuffer(webgl.ARRAY_BUFFER, typeIndexBuffer);
+	webgl.bufferData(webgl.ARRAY_BUFFER, new Float32Array([0, 1, 2]), webgl.STATIC_DRAW);
+	const typeIndexAttribute = webgl.getAttribLocation(program, "typeIndex");
+	webgl.enableVertexAttribArray(typeIndexAttribute);
+	webgl.vertexAttribPointer(typeIndexAttribute, 1, webgl.FLOAT, false, 0, 0);
 
 	webgl.drawArrays(webgl.POINTS, 0, 3);
 }
