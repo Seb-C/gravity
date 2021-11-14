@@ -6,9 +6,9 @@ export class Cluster {
 	public right: TreeAble;
 	public parentCluster: Cluster | null;
 
-	public positionX!: number;
-	public positionY!: number;
-	public radius!: number;
+	public positionX: number;
+	public positionY: number;
+	public radius: number;
 
 	constructor(left: TreeAble, right: TreeAble, parentCluster: Cluster | null) {
 		this.left = left;

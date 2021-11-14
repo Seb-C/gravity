@@ -19,14 +19,12 @@ export class ParticleType {
 		this.colorBlue = colorBlue;
 	}
 
-	public static canvasTexture?: HTMLCanvasElement;
-	public static webglTexture?: WebGLTexture;
-	static createWebGLTexture(config: Config, gl: WebGLRenderingContext) {
-		ParticleType.canvasTexture = document.createElement('canvas');
-		ParticleType.canvasTexture.width = config.particles.texturePrecision;
-		ParticleType.canvasTexture.height = config.particles.texturePrecision;
+	static createTexture(config: Config): HTMLCanvasElement {
+		const canvasTexture = document.createElement('canvas');
+		canvasTexture.width = config.particles.texturePrecision;
+		canvasTexture.height = config.particles.texturePrecision;
 
-		const context = ParticleType.canvasTexture.getContext('2d')!;
+		const context = canvasTexture.getContext('2d')!;
 		if (!context) {
 			throw new Error('Got a null context from the canvas.');
 		}
@@ -42,16 +40,6 @@ export class ParticleType {
 		);
 		context.fill();
 
-		ParticleType.webglTexture = gl.createTexture()!;
-		gl.bindTexture(gl.TEXTURE_2D, ParticleType.webglTexture);
-		gl.texImage2D(
-			gl.TEXTURE_2D,
-			0,
-			gl.RGBA,
-			gl.RGBA,
-			gl.UNSIGNED_BYTE,
-			ParticleType.canvasTexture,
-		);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+		return canvasTexture;
 	}
 }

@@ -3,6 +3,7 @@ import { ParticleType } from './particle-type';
 import { ParticleInterface } from '../common/particle-interface';
 import { SharedData, SharedBuffers } from '../common/shared-data';
 import { SharedParticleType } from '../common/shared-particle-type';
+import { WebGLRenderer } from './webgl-renderer';
 
 let config: Config;
 let sharedData: SharedData;
@@ -58,119 +59,20 @@ function startRenderingProcess() {
 	canvas.height = config.canvas.height;
 	document.body.appendChild(canvas);
 
-	const vertexShaderScript = `
-		#define particleTypesCount ${particleTypes.length}
-		#define canvasWidth ${config.canvas.width/2}
-		#define canvasHeight ${config.canvas.height/2}
+	const webgl = new WebGLRenderer(
+		config,
+		particleTypes,
+		sharedData,
+		canvas,
+	);
 
-		attribute float positionX;
-		attribute float positionY;
-		attribute float typeIndex;
-
-		uniform vec3 particleTypeColors[particleTypesCount];
-
-		varying mediump vec3 particleColor;
-
-		void main(void) {
-			gl_Position = vec4(positionX / float(canvasWidth), positionY / float(canvasHeight), 0.0, 1.0);
-			gl_PointSize = float(${config.particles.radius*2});
-			particleColor = particleTypeColors[int(typeIndex)];
-		}
-	`;
-	const fragmentShaderScript = `
-		uniform sampler2D particleTexture;
-		varying mediump vec3 particleColor;
-
-		void main(void) {
-			gl_FragColor = vec4(particleColor, 1.0) * texture2D(particleTexture, gl_PointCoord);
-		}
-	`;
-
-	const gl = canvas.getContext("webgl")!;
-	if (!gl) {
-		throw new Error('Got a null webgl context from the canvas.');
-	}
-
-	const vertexShader = gl.createShader(gl.VERTEX_SHADER)!;
-	gl.shaderSource(vertexShader, vertexShaderScript);
-	gl.compileShader(vertexShader);
-	if (!gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS)) {
-		throw new Error(gl.getShaderInfoLog(vertexShader) || "Error while compiling the vertex shader.");
-	}
-
-	const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER)!;
-	gl.shaderSource(fragmentShader, fragmentShaderScript);
-	gl.compileShader(fragmentShader);
-	if (!gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS)) {
-		throw new Error(gl.getShaderInfoLog(fragmentShader) || "Error while compiling the fragment shader.");
-	}
-
-	const program = gl.createProgram()!;
-	gl.attachShader(program, vertexShader);
-	gl.attachShader(program, fragmentShader);
-	gl.linkProgram(program);
-	if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-		throw new Error(gl.getProgramInfoLog(program) || "Error when creating the gl program");
-	}
-	gl.useProgram(program);
-
-	ParticleType.createWebGLTexture(config, gl);
-	gl.activeTexture(gl.TEXTURE0);
-	gl.bindTexture(gl.TEXTURE_2D, ParticleType.webglTexture!);
-	gl.uniform1i(gl.getUniformLocation(program, 'particleTexture'), 0);
-
-	const particleTypeColors = new Float32Array(particleTypes.length*3);
-	for (let i = 0; i < particleTypes.length; i++) {
-		particleTypeColors[i*3+0] = particleTypes[i].colorRed;
-		particleTypeColors[i*3+1] = particleTypes[i].colorGreen;
-		particleTypeColors[i*3+2] = particleTypes[i].colorBlue;
-	}
-	const particleTypeColorsUniform = gl.getUniformLocation(program, "particleTypeColors");
-	gl.uniform3fv(particleTypeColorsUniform, particleTypeColors);
-
-	const positionXBuffer = gl.createBuffer();
-	gl.bindBuffer(gl.ARRAY_BUFFER, positionXBuffer);
-	gl.bufferData(gl.ARRAY_BUFFER, sharedData.positionsX, gl.DYNAMIC_DRAW);
-	const positionXAttribute = gl.getAttribLocation(program, "positionX");
-	gl.enableVertexAttribArray(positionXAttribute);
-	gl.vertexAttribPointer(positionXAttribute, 1, gl.FLOAT, false, 0, 0);
-
-	const positionYBuffer = gl.createBuffer();
-	gl.bindBuffer(gl.ARRAY_BUFFER, positionYBuffer);
-	gl.bufferData(gl.ARRAY_BUFFER, sharedData.positionsY, gl.DYNAMIC_DRAW);
-	const positionYAttribute = gl.getAttribLocation(program, "positionY");
-	gl.enableVertexAttribArray(positionYAttribute);
-	gl.vertexAttribPointer(positionYAttribute, 1, gl.FLOAT, false, 0, 0);
-
-	const typeIndexBuffer = gl.createBuffer();
-	gl.bindBuffer(gl.ARRAY_BUFFER, typeIndexBuffer);
-	gl.bufferData(gl.ARRAY_BUFFER, sharedData.typeIndexes, gl.DYNAMIC_DRAW);
-	const typeIndexAttribute = gl.getAttribLocation(program, "typeIndex");
-	gl.enableVertexAttribArray(typeIndexAttribute);
-	gl.vertexAttribPointer(typeIndexAttribute, 1, gl.FLOAT, false, 0, 0);
-
-	gl.clearColor(1, 1, 1, 1);
-	gl.disable(gl.DEPTH_TEST);
-	gl.enable(gl.BLEND);
-	gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-
-	function draw () {
-		gl.clear(gl.COLOR_BUFFER_BIT);
-		gl.drawArrays(gl.POINTS, 0, sharedData.buffers.currentLength);
-
-		window.requestAnimationFrame(draw);
+	function processFrame() {
+		webgl.draw();
 
 		// Update the buffers asynchronously between the frames
-		setTimeout(() => {
-			gl.bindBuffer(gl.ARRAY_BUFFER, positionXBuffer);
-			gl.bufferData(gl.ARRAY_BUFFER, sharedData.positionsX, gl.DYNAMIC_DRAW);
+		setTimeout(() => webgl.updateBuffers(), 0);
 
-			gl.bindBuffer(gl.ARRAY_BUFFER, positionYBuffer);
-			gl.bufferData(gl.ARRAY_BUFFER, sharedData.positionsY, gl.DYNAMIC_DRAW);
-
-			gl.bindBuffer(gl.ARRAY_BUFFER, typeIndexBuffer);
-			gl.bufferData(gl.ARRAY_BUFFER, sharedData.typeIndexes, gl.DYNAMIC_DRAW);
-		}, 0);
+		window.requestAnimationFrame(processFrame);
 	}
-	window.requestAnimationFrame(draw);
+	window.requestAnimationFrame(processFrame);
 }
