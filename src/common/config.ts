@@ -6,6 +6,7 @@ export interface Config {
 		height: number,
 	},
 	particles: {
+		texturePrecision: number, // Must be a power of 2 for WebGL
 		radius: number,
 		amount: number,
 		types: SharedParticleType[],

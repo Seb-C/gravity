@@ -11,13 +11,13 @@ export class SharedBuffers {
 		this.currentLength = 0;
 		this.maxLength = maxLength;
 		this.positionsX = new SharedArrayBuffer(
-			this.maxLength * Float64Array.BYTES_PER_ELEMENT,
+			this.maxLength * Float32Array.BYTES_PER_ELEMENT,
 		);
 		this.positionsY = new SharedArrayBuffer(
-			this.maxLength * Float64Array.BYTES_PER_ELEMENT,
+			this.maxLength * Float32Array.BYTES_PER_ELEMENT,
 		);
 		this.typeIndexes = new SharedArrayBuffer(
-			this.maxLength * Uint8Array.BYTES_PER_ELEMENT,
+			this.maxLength * Float32Array.BYTES_PER_ELEMENT,
 		);
 	}
 }
@@ -25,15 +25,15 @@ export class SharedBuffers {
 export class SharedData {
 	public buffers: SharedBuffers;
 
-	public positionsX: Float64Array;
-	public positionsY: Float64Array;
-	public typeIndexes: Uint8Array;
+	public positionsX: Float32Array; // 64 not supported by WebGL
+	public positionsY: Float32Array; // 64 not supported by WebGL
+	public typeIndexes: Float32Array; // Float required by WebGL
 
 	constructor(buffers: SharedBuffers) {
 		this.buffers = buffers;
-		this.positionsX = new Float64Array(this.buffers.positionsX);
-		this.positionsY = new Float64Array(this.buffers.positionsY);
-		this.typeIndexes = new Uint8Array(this.buffers.typeIndexes);
+		this.positionsX = new Float32Array(this.buffers.positionsX);
+		this.positionsY = new Float32Array(this.buffers.positionsY);
+		this.typeIndexes = new Float32Array(this.buffers.typeIndexes);
 	}
 
 	public set(index: number, particle: ParticleInterface) {

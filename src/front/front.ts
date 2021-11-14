@@ -32,8 +32,9 @@ function createConfig() {
 			height: 400,
 		},
 		particles: {
-			amount: 30000,
-			radius: 2,
+			texturePrecision: 64,
+			amount: 300,
+			radius: 20,
 			types: sharedParticleTypes,
 		},
 	};
@@ -42,7 +43,6 @@ function createConfig() {
 		sharedParticleTypes[i] = new SharedParticleType(i);
 		particleTypes[i] = new ParticleType(
 			sharedParticleTypes[i],
-			config.particles.radius,
 			Math.random(),
 			Math.random(),
 			Math.random(),
@@ -58,56 +58,10 @@ function startRenderingProcess() {
 	canvas.height = config.canvas.height;
 	document.body.appendChild(canvas);
 
-	const context = canvas.getContext('2d')!;
-	if (!context) {
-		throw new Error('Got a null context from the canvas.');
-	}
-
-	function draw () {
-		context.clearRect(0, 0, canvas.width, canvas.height);
-		const radius = config.particles.radius;
-		for (let i = 0; i < sharedData.buffers.currentLength; i++) {
-			const x = sharedData.positionsX[i];
-			const y = sharedData.positionsY[i];
-			const type = particleTypes[sharedData.typeIndexes[i]];
-
-			context.drawImage(
-				type.image,
-				x - radius + (config.canvas.width / 2),
-				y - radius + (config.canvas.height / 2),
-				radius * 2,
-				radius * 2,
-			);
-		}
-
-		window.requestAnimationFrame(draw);
-	}
-	window.requestAnimationFrame(draw);
-
-
-
-
-
-
-
-
-
-
-
-
-
-	const webglCanvas = document.createElement('canvas');
-	webglCanvas.width = config.canvas.width;
-	webglCanvas.height = config.canvas.height;
-	document.body.appendChild(webglCanvas);
-
-	// TODO translate particle position for display
-	// TODO refresh buffers?
-
 	const vertexShaderScript = `
 		#define particleTypesCount ${particleTypes.length}
-		#define canvasWidth ${config.canvas.width}
-		#define canvasHeight ${config.canvas.height}
+		#define canvasWidth ${config.canvas.width/2}
+		#define canvasHeight ${config.canvas.height/2}
 
 		attribute float positionX;
 		attribute float positionY;
@@ -132,38 +86,38 @@ function startRenderingProcess() {
 		}
 	`;
 
-	const webgl = webglCanvas.getContext("webgl")!;
-	if (!webgl) {
+	const gl = canvas.getContext("webgl")!;
+	if (!gl) {
 		throw new Error('Got a null webgl context from the canvas.');
 	}
 
-	const vertexShader = webgl.createShader(webgl.VERTEX_SHADER)!;
-	webgl.shaderSource(vertexShader, vertexShaderScript);
-	webgl.compileShader(vertexShader);
-	if (!webgl.getShaderParameter(vertexShader, webgl.COMPILE_STATUS)) {
-		throw new Error(webgl.getShaderInfoLog(vertexShader) || "Error while compiling the vertex shader.");
+	const vertexShader = gl.createShader(gl.VERTEX_SHADER)!;
+	gl.shaderSource(vertexShader, vertexShaderScript);
+	gl.compileShader(vertexShader);
+	if (!gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS)) {
+		throw new Error(gl.getShaderInfoLog(vertexShader) || "Error while compiling the vertex shader.");
 	}
 
-	const fragmentShader = webgl.createShader(webgl.FRAGMENT_SHADER)!;
-	webgl.shaderSource(fragmentShader, fragmentShaderScript);
-	webgl.compileShader(fragmentShader);
-	if (!webgl.getShaderParameter(fragmentShader, webgl.COMPILE_STATUS)) {
-		throw new Error(webgl.getShaderInfoLog(fragmentShader) || "Error while compiling the fragment shader.");
+	const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER)!;
+	gl.shaderSource(fragmentShader, fragmentShaderScript);
+	gl.compileShader(fragmentShader);
+	if (!gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS)) {
+		throw new Error(gl.getShaderInfoLog(fragmentShader) || "Error while compiling the fragment shader.");
 	}
 
-	const program = webgl.createProgram()!;
-	webgl.attachShader(program, vertexShader);
-	webgl.attachShader(program, fragmentShader);
-	webgl.linkProgram(program);
-	if (!webgl.getProgramParameter(program, webgl.LINK_STATUS)) {
-		throw new Error(webgl.getProgramInfoLog(program) || "Error when creating the WebGL program");
+	const program = gl.createProgram()!;
+	gl.attachShader(program, vertexShader);
+	gl.attachShader(program, fragmentShader);
+	gl.linkProgram(program);
+	if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+		throw new Error(gl.getProgramInfoLog(program) || "Error when creating the gl program");
 	}
-	webgl.useProgram(program);
+	gl.useProgram(program);
 
-	ParticleType.createWebGLTexture(webgl);
-	webgl.activeTexture(webgl.TEXTURE0);
-	webgl.bindTexture(webgl.TEXTURE_2D, ParticleType.webglTexture!);
-	webgl.uniform1i(webgl.getUniformLocation(program, 'particleTexture'), 0);
+	ParticleType.createWebGLTexture(config, gl);
+	gl.activeTexture(gl.TEXTURE0);
+	gl.bindTexture(gl.TEXTURE_2D, ParticleType.webglTexture!);
+	gl.uniform1i(gl.getUniformLocation(program, 'particleTexture'), 0);
 
 	const particleTypeColors = new Float32Array(particleTypes.length*3);
 	for (let i = 0; i < particleTypes.length; i++) {
@@ -171,29 +125,40 @@ function startRenderingProcess() {
 		particleTypeColors[i*3+1] = particleTypes[i].colorGreen;
 		particleTypeColors[i*3+2] = particleTypes[i].colorBlue;
 	}
-	const particleTypeColorsUniform = webgl.getUniformLocation(program, "particleTypeColors");
-	webgl.uniform3fv(particleTypeColorsUniform, particleTypeColors);
+	const particleTypeColorsUniform = gl.getUniformLocation(program, "particleTypeColors");
+	gl.uniform3fv(particleTypeColorsUniform, particleTypeColors);
 
-	const positionXBuffer = webgl.createBuffer();
-	webgl.bindBuffer(webgl.ARRAY_BUFFER, positionXBuffer);
-	webgl.bufferData(webgl.ARRAY_BUFFER, new Float32Array([-100, 0, 100]), webgl.STATIC_DRAW);
-	const positionXAttribute = webgl.getAttribLocation(program, "positionX");
-	webgl.enableVertexAttribArray(positionXAttribute);
-	webgl.vertexAttribPointer(positionXAttribute, 1, webgl.FLOAT, false, 0, 0);
+	const positionXBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, positionXBuffer);
+	gl.bufferData(gl.ARRAY_BUFFER, sharedData.positionsX, gl.STATIC_DRAW);
+	const positionXAttribute = gl.getAttribLocation(program, "positionX");
+	gl.enableVertexAttribArray(positionXAttribute);
+	gl.vertexAttribPointer(positionXAttribute, 1, gl.FLOAT, false, 0, 0);
 
-	const positionYBuffer = webgl.createBuffer();
-	webgl.bindBuffer(webgl.ARRAY_BUFFER, positionYBuffer);
-	webgl.bufferData(webgl.ARRAY_BUFFER, new Float32Array([-100, 0, -100]), webgl.STATIC_DRAW);
-	const positionYAttribute = webgl.getAttribLocation(program, "positionY");
-	webgl.enableVertexAttribArray(positionYAttribute);
-	webgl.vertexAttribPointer(positionYAttribute, 1, webgl.FLOAT, false, 0, 0);
+	const positionYBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, positionYBuffer);
+	gl.bufferData(gl.ARRAY_BUFFER, sharedData.positionsY, gl.STATIC_DRAW);
+	const positionYAttribute = gl.getAttribLocation(program, "positionY");
+	gl.enableVertexAttribArray(positionYAttribute);
+	gl.vertexAttribPointer(positionYAttribute, 1, gl.FLOAT, false, 0, 0);
 
-	const typeIndexBuffer = webgl.createBuffer();
-	webgl.bindBuffer(webgl.ARRAY_BUFFER, typeIndexBuffer);
-	webgl.bufferData(webgl.ARRAY_BUFFER, new Float32Array([0, 1, 2]), webgl.STATIC_DRAW);
-	const typeIndexAttribute = webgl.getAttribLocation(program, "typeIndex");
-	webgl.enableVertexAttribArray(typeIndexAttribute);
-	webgl.vertexAttribPointer(typeIndexAttribute, 1, webgl.FLOAT, false, 0, 0);
+	const typeIndexBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, typeIndexBuffer);
+	gl.bufferData(gl.ARRAY_BUFFER, sharedData.typeIndexes, gl.STATIC_DRAW);
+	const typeIndexAttribute = gl.getAttribLocation(program, "typeIndex");
+	gl.enableVertexAttribArray(typeIndexAttribute);
+	gl.vertexAttribPointer(typeIndexAttribute, 1, gl.FLOAT, false, 0, 0);
 
-	webgl.drawArrays(webgl.POINTS, 0, 3);
+	gl.clearColor(1, 1, 1, 1);
+	gl.disable(gl.DEPTH_TEST);
+	gl.enable(gl.BLEND);
+	gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+
+	function draw () {
+		gl.clear(gl.COLOR_BUFFER_BIT);
+		gl.drawArrays(gl.POINTS, 0, sharedData.buffers.currentLength);
+
+		window.requestAnimationFrame(draw);
+	}
+	window.requestAnimationFrame(draw);
 }
