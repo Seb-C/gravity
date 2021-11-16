@@ -31,6 +31,20 @@ function init(config: Config) {
 
 	front.sendBuffers(sharedBuffers);
 
+	front.onGetParticleIdFromPosition((positionX, positionY) => {
+		// rootCluster.searchCollision(
+		// 	// TODO
+		// 	new Particle(
+		// 		0,
+		// 		positionX,
+		// 		positionY,
+		// 		type,
+		// 		0,
+		// 	),
+		// );
+		front.sendParticleIdResponse(<any>42);
+	});
+
 	let lastTick = +new Date();
 	setInterval(() => {
 		const thisTick = +new Date();

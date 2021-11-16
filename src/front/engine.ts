@@ -6,13 +6,13 @@ export type OnReadyCallback = () => void;
 export type OnBuffersCallback = (buffers: SharedBuffers) => void;
 
 // private
-type OnParticleIndexResponseCallback = (index: ParticleId|null) => void;
+type OnParticleIdResponseCallback = (id: ParticleId|null) => void;
 
 export class Engine {
 	private worker: Worker;
 	private onReadyCallback?: OnReadyCallback;
 	private onBuffersCallback?: OnBuffersCallback;
-	private onParticleIndexResponseCallback?: OnParticleIndexResponseCallback;
+	private onParticleIdResponseCallback?: OnParticleIdResponseCallback;
 
 	constructor() {
 		this.worker = new Worker('./static/engine.js');
@@ -28,9 +28,9 @@ export class Engine {
 						this.onBuffersCallback(<SharedBuffers>event.data.buffers);
 						return;
 					}
-				case 'particleIndexResponse':
-					if (this.onParticleIndexResponseCallback) {
-						this.onParticleIndexResponseCallback(<ParticleId>event.data.index || null);
+				case 'particleIdResponse':
+					if (this.onParticleIdResponseCallback) {
+						this.onParticleIdResponseCallback(<ParticleId>event.data.id || null);
 						return;
 					}
 				default:
@@ -53,13 +53,13 @@ export class Engine {
 
 	public async getParticleIdFromPosition(positionX: number, positionY: number): Promise<ParticleId|null> {
 		return new Promise((resolve) => {
-			this.onParticleIndexResponseCallback = (index: ParticleId|null) => {
-				resolve(index);
-				delete this.onParticleIndexResponseCallback;
+			this.onParticleIdResponseCallback = (id: ParticleId|null) => {
+				resolve(id);
+				delete this.onParticleIdResponseCallback;
 			};
 
 			this.worker.postMessage({
-				type: 'getParticleIndexFromPosition',
+				type: 'getParticleIdFromPosition',
 				positionX,
 				positionY,
 			});
