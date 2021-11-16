@@ -34,8 +34,8 @@ function createConfig() {
 		},
 		particles: {
 			texturePrecision: 64,
-			amount: 10000,
-			radius: 4,
+			amount: 1000,
+			radius: 10,
 			types: sharedParticleTypes,
 		},
 	};

@@ -2,6 +2,7 @@ import { SharedParticleType } from '../common/shared-particle-type';
 import { ParticleInterface } from '../common/particle-interface';
 
 export const MIN_VELOCITY_PER_SECOND = 0.01;
+export const COLLISION_PUSHBACK_SECONDS = 0.2;
 
 export class Particle implements ParticleInterface {
 	public positionX: number;
@@ -59,9 +60,19 @@ export class Particle implements ParticleInterface {
 		return true;
 	}
 
-	public updateVelocityFromCollision(particle: Particle) {
-		this.velocityXPerSecond += this.positionX - particle.positionX;
-		this.velocityYPerSecond += this.positionY - particle.positionY;
+	public updateFromCollision(particle: Particle, elapsedSeconds: number) {
+		const pushbackPerSecond = particle.radius / COLLISION_PUSHBACK_SECONDS;
+		const currentPushback = pushbackPerSecond * elapsedSeconds;
+
+		let deltaX = this.positionX - particle.positionX;
+		let deltaY = this.positionY - particle.positionY;
+
+		this.positionX += currentPushback > Math.abs(deltaX)
+			? deltaX
+			: currentPushback * Math.sign(deltaX);
+		this.positionY += currentPushback > Math.abs(deltaY)
+			? deltaY
+			: currentPushback * Math.sign(deltaY);
 	}
 
 	public distance(particle: Particle): number {

@@ -102,15 +102,17 @@ export class Root {
 	public tick(elapsedSeconds: number) {
 		for (let i = 0; i < this.allNodes.length; i++) {
 			const node = this.allNodes[i];
-			if (node.particle.move(elapsedSeconds)) {
-				this.sharedData.set(i, node.particle);
-				this.removeFromTree(node);
-				this.addToTree(node);
-			}
+			let hasMoved = node.particle.move(elapsedSeconds);
 
 			const collidedNodes = this.searchCollision(node);
 			for (let j = 0; j < collidedNodes.length; j++) {
-				node.particle.updateVelocityFromCollision(collidedNodes[j].particle);
+				node.particle.updateFromCollision(collidedNodes[j].particle, elapsedSeconds);
+			}
+
+			if (hasMoved || collidedNodes.length > 0) {
+				this.sharedData.set(i, node.particle);
+				this.removeFromTree(node);
+				this.addToTree(node);
 			}
 		}
 	}
