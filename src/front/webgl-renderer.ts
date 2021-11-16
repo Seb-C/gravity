@@ -15,7 +15,7 @@ export class WebGLRenderer {
 
 	private positionXBuffer: WebGLBuffer;
 	private positionYBuffer: WebGLBuffer;
-	private typeIndexBuffer: WebGLBuffer;
+	private typeIdBuffer: WebGLBuffer;
 
 	private particleTexture: WebGLTexture;
 
@@ -37,7 +37,7 @@ export class WebGLRenderer {
 
 		this.positionXBuffer = this.createPositionXBuffer();
 		this.positionYBuffer = this.createPositionYBuffer();
-		this.typeIndexBuffer = this.createTypeIndexBuffer();
+		this.typeIdBuffer = this.createTypeIndexBuffer();
 
 		this.particleTexture = this.createParticleTexture();
 		this.setupParticleTypes();
@@ -55,8 +55,8 @@ export class WebGLRenderer {
 		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.positionYBuffer);
 		this.gl.bufferData(this.gl.ARRAY_BUFFER, this.sharedData.positionsY, this.gl.DYNAMIC_DRAW);
 
-		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.typeIndexBuffer);
-		this.gl.bufferData(this.gl.ARRAY_BUFFER, this.sharedData.typeIndexes, this.gl.DYNAMIC_DRAW);
+		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.typeIdBuffer);
+		this.gl.bufferData(this.gl.ARRAY_BUFFER, this.sharedData.typeIds, this.gl.DYNAMIC_DRAW);
 	}
 
 	private setupWebGL(): WebGLRenderingContext {
@@ -81,7 +81,7 @@ export class WebGLRenderer {
 
 			attribute float positionX;
 			attribute float positionY;
-			attribute float typeIndex;
+			attribute float typeId;
 
 			uniform vec3 particleTypeColors[particleTypesCount];
 
@@ -90,7 +90,7 @@ export class WebGLRenderer {
 			void main(void) {
 				gl_Position = vec4(positionX / float(canvasWidth), positionY / float(canvasHeight), 0.0, 1.0);
 				gl_PointSize = float(${this.config.particles.radius*2});
-				particleColor = particleTypeColors[int(typeIndex)];
+				particleColor = particleTypeColors[int(typeId)];
 			}
 		`;
 
@@ -191,12 +191,12 @@ export class WebGLRenderer {
 	}
 
 	private createTypeIndexBuffer(): WebGLBuffer {
-		const typeIndexBuffer = this.gl.createBuffer()!;
-		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, typeIndexBuffer);
-		const typeIndexAttribute = this.gl.getAttribLocation(this.program, "typeIndex");
-		this.gl.enableVertexAttribArray(typeIndexAttribute);
-		this.gl.vertexAttribPointer(typeIndexAttribute, 1, this.gl.FLOAT, false, 0, 0);
+		const typeIdBuffer = this.gl.createBuffer()!;
+		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, typeIdBuffer);
+		const typeIdAttribute = this.gl.getAttribLocation(this.program, "typeId");
+		this.gl.enableVertexAttribArray(typeIdAttribute);
+		this.gl.vertexAttribPointer(typeIdAttribute, 1, this.gl.FLOAT, false, 0, 0);
 
-		return typeIndexBuffer;
+		return typeIdBuffer;
 	}
 }

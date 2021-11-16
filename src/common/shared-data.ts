@@ -1,11 +1,11 @@
-import { ParticleInterface } from './particle-interface';
+import { Particle } from './particle';
 
 export class SharedBuffers {
 	public currentLength: number;
 	public maxLength: number;
 	public positionsX: SharedArrayBuffer;
 	public positionsY: SharedArrayBuffer;
-	public typeIndexes: SharedArrayBuffer;
+	public typeIds: SharedArrayBuffer;
 
 	constructor(maxLength: number) {
 		this.currentLength = 0;
@@ -16,7 +16,7 @@ export class SharedBuffers {
 		this.positionsY = new SharedArrayBuffer(
 			this.maxLength * Float32Array.BYTES_PER_ELEMENT,
 		);
-		this.typeIndexes = new SharedArrayBuffer(
+		this.typeIds = new SharedArrayBuffer(
 			this.maxLength * Float32Array.BYTES_PER_ELEMENT,
 		);
 	}
@@ -27,16 +27,16 @@ export class SharedData {
 
 	public positionsX: Float32Array; // 64 not supported by WebGL
 	public positionsY: Float32Array; // 64 not supported by WebGL
-	public typeIndexes: Float32Array; // Float required by WebGL
+	public typeIds: Float32Array; // Float required by WebGL
 
 	constructor(buffers: SharedBuffers) {
 		this.buffers = buffers;
 		this.positionsX = new Float32Array(this.buffers.positionsX);
 		this.positionsY = new Float32Array(this.buffers.positionsY);
-		this.typeIndexes = new Float32Array(this.buffers.typeIndexes);
+		this.typeIds = new Float32Array(this.buffers.typeIds);
 	}
 
-	public set(index: number, particle: ParticleInterface) {
+	public set(index: number, particle: Particle) {
 		if (index >= this.buffers.maxLength) {
 			throw new Error(`Cannot set a particle at index ${index} because the max amount is ${this.buffers.maxLength}.`);
 		}
@@ -44,6 +44,6 @@ export class SharedData {
 		this.buffers.currentLength = index + 1;
 		this.positionsX[index] = particle.positionX;
 		this.positionsY[index] = particle.positionY;
-		this.typeIndexes[index] = particle.typeIndex;
+		this.typeIds[index] = particle.typeId;
 	}
 }

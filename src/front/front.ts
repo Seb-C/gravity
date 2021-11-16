@@ -1,31 +1,23 @@
 import { Config } from '../common/config';
 import { ParticleType } from './particle-type';
-import { ParticleInterface } from '../common/particle-interface';
 import { SharedData, SharedBuffers } from '../common/shared-data';
-import { SharedParticleType } from '../common/shared-particle-type';
+import { ParticleTypeId } from '../common/particle-type';
 import { WebGLRenderer } from './webgl-renderer';
+import { MouseHandler } from './mouse-handler';
+import { Engine} from './engine';
 
 let config: Config;
 let sharedData: SharedData;
 let particleTypes: ParticleType[];
 
-const engine = new Worker('./static/engine.js');
-engine.addEventListener('message', (event: MessageEvent) => {
-	switch (event.data?.type) {
-		case 'ready':
-			createConfig();
-			return;
-		case 'buffers':
-			sharedData = new SharedData(<SharedBuffers>event.data.buffers);
-			startRenderingProcess();
-			return;
-		default:
-			throw new Error(`Unknown message type ${event.data?.type} received by front.`);
-	}
+const engineWorker = new Engine();
+engineWorker.onReady(createConfig);
+engineWorker.onBuffers((buffers: SharedBuffers) => {
+	sharedData = new SharedData(buffers);
+	startRenderingProcess();
 });
 
 function createConfig() {
-	const sharedParticleTypes = new Array(100);
 	particleTypes = new Array(100);
 	config = {
 		canvas: {
@@ -36,21 +28,24 @@ function createConfig() {
 			texturePrecision: 64,
 			amount: 1000,
 			radius: 10,
-			types: sharedParticleTypes,
+			types: new Array(100),
 		},
 	};
 
 	for (let i = 0; i < particleTypes.length; i++) {
-		sharedParticleTypes[i] = new SharedParticleType(i);
+		const particleTypeId = <ParticleTypeId>i;
+		config.particles.types[i] = {
+			id: particleTypeId,
+		};
 		particleTypes[i] = new ParticleType(
-			sharedParticleTypes[i],
+			particleTypeId,
 			Math.random(),
 			Math.random(),
 			Math.random(),
 		);
 	}
 
-	engine.postMessage({ type: 'config', config });
+	engineWorker.sendConfig(config);
 }
 
 function startRenderingProcess() {
@@ -59,12 +54,8 @@ function startRenderingProcess() {
 	canvas.height = config.canvas.height;
 	document.body.appendChild(canvas);
 
-	const webgl = new WebGLRenderer(
-		config,
-		particleTypes,
-		sharedData,
-		canvas,
-	);
+	const webgl = new WebGLRenderer(config, particleTypes, sharedData, canvas);
+	const mouseHandler = new MouseHandler(config, canvas, engineWorker);
 
 	function processFrame() {
 		webgl.draw();

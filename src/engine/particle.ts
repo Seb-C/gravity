@@ -1,13 +1,14 @@
-import { SharedParticleType } from '../common/shared-particle-type';
-import { ParticleInterface } from '../common/particle-interface';
+import { ParticleType } from '../common/particle-type';
+import { Particle as ParticleInterface, ParticleId } from '../common/particle';
 
 export const MIN_VELOCITY_PER_SECOND = 0.01;
 export const COLLISION_PUSHBACK_SECONDS = 0.2;
 
 export class Particle implements ParticleInterface {
+	public id: ParticleId;
 	public positionX: number;
 	public positionY: number;
-	public typeIndex: number;
+	public typeId: number;
 	public radius: number;
 
 	public velocityXPerSecond: number = 0;
@@ -16,14 +17,16 @@ export class Particle implements ParticleInterface {
 	public decelerationRatePerSecond: number = 0.8;
 
 	constructor(
+		id: ParticleId,
 		positionX: number,
 		positionY: number,
-		type: SharedParticleType,
+		type: ParticleType,
 		radius: number,
 	) {
+		this.id = id;
 		this.positionX = positionX;
 		this.positionY = positionY;
-		this.typeIndex = type.index;
+		this.typeId = type.id;
 		this.radius = radius;
 	}
 

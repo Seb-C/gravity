@@ -1,19 +1,19 @@
 import { Config } from '../common/config';
-import { SharedParticleType } from '../common/shared-particle-type';
+import { ParticleTypeId } from '../common/particle-type';
 
 export class ParticleType {
-	public shared: SharedParticleType;
+	public id: ParticleTypeId;
 	public colorRed: number;
 	public colorGreen: number;
 	public colorBlue: number;
 
 	constructor(
-		shared: SharedParticleType,
+		id: ParticleTypeId,
 		colorRed: number,
 		colorGreen: number,
 		colorBlue: number,
 	) {
-		this.shared = shared;
+		this.id = id;
 		this.colorRed = colorRed;
 		this.colorGreen = colorGreen;
 		this.colorBlue = colorBlue;

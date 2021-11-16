@@ -3,11 +3,16 @@ import { Particle } from './particle';
 import { Root } from './cluster/root';
 import { Node } from './cluster/node';
 import { SharedBuffers, SharedData } from '../common/shared-data';
+import { ParticleId } from '../common/particle';
 
 self.addEventListener('message', (event: any) => {
 	switch (event.data?.type) {
 		case 'config':
 			init(event.data?.config);
+			return;
+		case 'getParticleIndexFromPosition':
+			console.log(event.data);
+			// self.postMessage({ type: 'particleIndexResponse', index: 42|null });
 			return;
 		default:
 			throw new Error(`Unknown message type ${event.data?.type} received by engine.`);
@@ -25,6 +30,7 @@ function init(config: Config) {
 			i,
 			new Node(
 				new Particle(
+					<ParticleId>(i+1),
 					config.canvas.width * Math.random() - (config.canvas.width / 2),
 					config.canvas.height * Math.random() - (config.canvas.height / 2),
 					config.particles.types[Math.floor(Math.random() * config.particles.types.length)],

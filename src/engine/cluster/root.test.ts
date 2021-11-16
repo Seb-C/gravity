@@ -3,18 +3,19 @@ import { Cluster } from './cluster';
 import { Root } from './root';
 import { Node } from './node';
 import { Particle } from '../particle';
-import { SharedParticleType } from '../../common/shared-particle-type';
+import { ParticleType, ParticleTypeId } from '../../common/particle-type';
 import { SharedBuffers, SharedData } from '../../common/shared-data';
+import { ParticleId } from '../../common/particle';
 
 describe('Root', () => {
 	describe('removeFromTree', () => {
-		const type: SharedParticleType = { index: 1 };
+		const type: ParticleType = { id: <ParticleTypeId>1 };
 		const mockedSharedData: SharedData = <any>{};
 
 		const createLeftTree = () => {
-			const nodeA = new Node(new Particle(0, 0, type, 1));
-			const nodeB = new Node(new Particle(0, 0, type, 2));
-			const nodeC = new Node(new Particle(0, 0, type, 3));
+			const nodeA = new Node(new Particle(<ParticleId>1, 0, 0, type, 1));
+			const nodeB = new Node(new Particle(<ParticleId>2, 0, 0, type, 2));
+			const nodeC = new Node(new Particle(<ParticleId>3, 0, 0, type, 3));
 
 			const clusterB = Cluster.createAndSetParents(nodeA, nodeB, null);
 			const clusterA = Cluster.createAndSetParents(clusterB, nodeC, null);
@@ -25,9 +26,9 @@ describe('Root', () => {
 			return { nodeA, nodeB, nodeC, clusterA, clusterB, rootCluster };
 		}
 		const createRightTree = () => {
-			const nodeA = new Node(new Particle(0, 0, type, 1));
-			const nodeB = new Node(new Particle(0, 0, type, 2));
-			const nodeC = new Node(new Particle(0, 0, type, 3));
+			const nodeA = new Node(new Particle(<ParticleId>1, 0, 0, type, 1));
+			const nodeB = new Node(new Particle(<ParticleId>2, 0, 0, type, 2));
+			const nodeC = new Node(new Particle(<ParticleId>3, 0, 0, type, 3));
 
 			const clusterB = Cluster.createAndSetParents(nodeB, nodeC, null);
 			const clusterA = Cluster.createAndSetParents(nodeA, clusterB, null);
@@ -38,8 +39,8 @@ describe('Root', () => {
 			return { nodeA, nodeB, nodeC, clusterA, clusterB, rootCluster };
 		}
 		const createOneLevelTree = () => {
-			const nodeA = new Node(new Particle(0, 0, type, 1));
-			const nodeB = new Node(new Particle(0, 0, type, 2));
+			const nodeA = new Node(new Particle(<ParticleId>1, 0, 0, type, 1));
+			const nodeB = new Node(new Particle(<ParticleId>2, 0, 0, type, 2));
 
 			const cluster = Cluster.createAndSetParents(nodeA, nodeB, null);
 
@@ -114,7 +115,7 @@ describe('Root', () => {
 			expect(nodeB.parentCluster).toBe(null);
 		});
 		it('root', () => {
-			const node = new Node(new Particle(0, 0, type, 1));
+			const node = new Node(new Particle(<ParticleId>1, 0, 0, type, 1));
 			const rootCluster = new Root(mockedSharedData);
 			rootCluster.root = node;
 			rootCluster.removeFromTree(node);
