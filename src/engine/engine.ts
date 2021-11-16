@@ -4,22 +4,11 @@ import { Root } from './cluster/root';
 import { Node } from './cluster/node';
 import { SharedBuffers, SharedData } from '../common/shared-data';
 import { ParticleId } from '../common/particle';
+import { Front } from './front';
 
-self.addEventListener('message', (event: any) => {
-	switch (event.data?.type) {
-		case 'config':
-			init(event.data?.config);
-			return;
-		case 'getParticleIndexFromPosition':
-			console.log(event.data);
-			// self.postMessage({ type: 'particleIndexResponse', index: 42|null });
-			return;
-		default:
-			throw new Error(`Unknown message type ${event.data?.type} received by engine.`);
-	}
-});
-
-self.postMessage({ type: 'ready' });
+const front = new Front(self);
+front.onConfig(init);
+front.sendReady();
 
 function init(config: Config) {
 	const sharedBuffers = new SharedBuffers(config.particles.amount);
@@ -40,10 +29,7 @@ function init(config: Config) {
 		);
 	}
 
-	postMessage({
-		type: 'buffers',
-		buffers: sharedBuffers,
-	});
+	front.sendBuffers(sharedBuffers);
 
 	let lastTick = +new Date();
 	setInterval(() => {
