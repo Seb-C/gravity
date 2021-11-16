@@ -6,6 +6,7 @@ export class WebGLRenderer {
 	public config: Config;
 	public particleTypes: ParticleType[];
 	public sharedData: SharedData;
+	public window: Window;
 	public canvas: HTMLCanvasElement;
 
 	public gl: WebGLRenderingContext;
@@ -23,11 +24,13 @@ export class WebGLRenderer {
 		config: Config,
 		particleTypes: ParticleType[],
 		sharedData: SharedData,
+		window: Window,
 		canvas: HTMLCanvasElement,
 	) {
 		this.config = config;
 		this.particleTypes = particleTypes;
 		this.sharedData = sharedData;
+		this.window = window;
 		this.canvas = canvas;
 
 		this.gl = this.setupWebGL();
@@ -138,7 +141,7 @@ export class WebGLRenderer {
 	}
 
 	private createParticleTexture(): WebGLTexture {
-		const textureCanvas = ParticleType.createTexture(this.config);
+		const textureCanvas = ParticleType.createTexture(this.window, this.config);
 
 		const texture = this.gl.createTexture()!;
 		this.gl.bindTexture(this.gl.TEXTURE_2D, texture);

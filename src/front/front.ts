@@ -49,12 +49,12 @@ function createConfig() {
 }
 
 function startRenderingProcess() {
-	const canvas = document.createElement('canvas');
+	const canvas = window.document.createElement('canvas');
 	canvas.width = config.canvas.width;
 	canvas.height = config.canvas.height;
 	document.body.appendChild(canvas);
 
-	const webgl = new WebGLRenderer(config, particleTypes, sharedData, canvas);
+	const webgl = new WebGLRenderer(config, particleTypes, sharedData, window, canvas);
 	const mouseHandler = new MouseHandler(config, canvas, engineWorker);
 
 	function processFrame() {

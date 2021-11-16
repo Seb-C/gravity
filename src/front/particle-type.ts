@@ -19,8 +19,8 @@ export class ParticleType {
 		this.colorBlue = colorBlue;
 	}
 
-	static createTexture(config: Config): HTMLCanvasElement {
-		const canvasTexture = document.createElement('canvas');
+	static createTexture(window: Window, config: Config): HTMLCanvasElement {
+		const canvasTexture = window.document.createElement('canvas');
 		canvasTexture.width = config.particles.texturePrecision;
 		canvasTexture.height = config.particles.texturePrecision;
 
