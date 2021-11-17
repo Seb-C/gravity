@@ -24,16 +24,22 @@ export class MouseHandler {
 
 	bindEvents() {
 		this.canvas.addEventListener('mousedown', (event: MouseEvent) => {
-			const [clickX, clickY] = this.mouseEventToPosition(event);
-			this.engine.getParticleIdFromPosition(clickX, clickY).then((particleId) => {
-				this.selectedParticleId = particleId;
-			});
+			const [positionX, positionY] = this.mouseEventToPosition(event);
+			const radius = this.config.mouse.searchRadius;
+			this.engine
+				.getParticleIdsFromPosition({ positionX, positionY, radius })
+				.then((particleIds) => {
+					this.selectedParticleId = particleIds[particleIds.length - 1] || null;
+				});
 		});
 		this.canvas.addEventListener('mousemove', (event: MouseEvent) => {
-			console.log('move', event);
+			if (this.selectedParticleId !== null) {
+				const [positionX, positionY] = this.mouseEventToPosition(event);
+				this.engine.sendMoveParticle(this.selectedParticleId, positionX, positionY);
+			}
 		});
 		this.canvas.addEventListener('mouseup', (event: MouseEvent) => {
-			console.log('up', event);
+			this.selectedParticleId = null;
 		});
 	}
 

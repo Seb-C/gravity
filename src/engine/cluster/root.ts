@@ -2,6 +2,7 @@ import { Particle } from '../particle';
 import { Node } from './node';
 import { Cluster } from './cluster';
 import { SharedBuffers, SharedData } from '../../common/shared-data';
+import { ParticleId } from '../../common/particle';
 import { Body, bodiesDoesCollide } from './body';
 
 export type TreeAble = Cluster | Node;
@@ -10,16 +11,20 @@ export class Root {
 	public root: TreeAble | null;
 	public allNodes: Node[];
 	public sharedData: SharedData;
+	public particlesById: Map<ParticleId, Particle>;
 
 	constructor(sharedData: SharedData) {
 		this.root = null;
 		this.allNodes = [];
 		this.sharedData = sharedData;
+		this.particlesById = new Map<ParticleId, Particle>();
 	}
 
-	public add(index: number, node: Node) {
-		this.sharedData.set(index, node.particle);
+	public add(index: number, particle: Particle) {
+		const node = new Node(particle);
+		this.sharedData.set(index, particle);
 		this.allNodes[index] = node;
+		this.particlesById.set(particle.id, particle);
 		this.addToTree(node);
 	}
 
@@ -103,7 +108,7 @@ export class Root {
 	public tick(elapsedSeconds: number) {
 		for (let i = 0; i < this.allNodes.length; i++) {
 			const node = this.allNodes[i];
-			let hasMoved = node.particle.move(elapsedSeconds);
+			const hasMoved = node.particle.move(elapsedSeconds);
 
 			const collidedNodes = this.searchCollision(node.particle);
 			for (let j = 0; j < collidedNodes.length; j++) {
@@ -169,5 +174,9 @@ export class Root {
 
 		// Returning the increase of the cluster's area as a cost
 		return (Math.PI * radiusAfter * radiusAfter) - (Math.PI * radiusBefore * radiusBefore);
+	}
+
+	public getParticleById(id: ParticleId): Particle | null {
+		return this.particlesById.get(id) || null;
 	}
 }

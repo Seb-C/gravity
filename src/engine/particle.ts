@@ -3,6 +3,7 @@ import { Particle as ParticleInterface, ParticleId } from '../common/particle';
 import { Body } from './cluster/body';
 
 export const MIN_VELOCITY_PER_SECOND = 0.01;
+export const PUSHBACK_RATE = 0.6;
 export const COLLISION_PUSHBACK_SECONDS = 0.2;
 
 export class Particle implements ParticleInterface, Body {
@@ -51,18 +52,43 @@ export class Particle implements ParticleInterface, Body {
 		return true;
 	}
 
-	public updateFromCollision(body: Body, elapsedSeconds: number) {
-		const pushbackPerSecond = body.radius / COLLISION_PUSHBACK_SECONDS;
+	public updateFromCollision(particle: Particle, elapsedSeconds: number) {
+		let deltaX = particle.positionX - this.positionX;
+		let deltaY = particle.positionY - this.positionY;
+
+		// Projecting back and slowing down if there is existing velocity toward it
+		// Also transmitting the residual cynetic energy to the other particle
+		if (Math.sign(this.velocityXPerSecond) == Math.sign(deltaX)) {
+			particle.velocityXPerSecond += this.velocityXPerSecond * (1 - PUSHBACK_RATE);
+			this.velocityXPerSecond = -(this.velocityXPerSecond * PUSHBACK_RATE);
+		}
+		if (Math.sign(this.velocityYPerSecond) == Math.sign(deltaY)) {
+			particle.velocityYPerSecond += this.velocityYPerSecond * (1 - PUSHBACK_RATE);
+			this.velocityYPerSecond = -(this.velocityYPerSecond * PUSHBACK_RATE);
+		}
+
+		const pushbackPerSecond = particle.radius / COLLISION_PUSHBACK_SECONDS;
 		const currentPushback = pushbackPerSecond * elapsedSeconds;
-
-		let deltaX = this.positionX - body.positionX;
-		let deltaY = this.positionY - body.positionY;
-
-		this.positionX += currentPushback > Math.abs(deltaX)
+		this.positionX -= currentPushback > Math.abs(deltaX)
 			? deltaX
 			: currentPushback * Math.sign(deltaX);
-		this.positionY += currentPushback > Math.abs(deltaY)
+		this.positionY -= currentPushback > Math.abs(deltaY)
 			? deltaY
 			: currentPushback * Math.sign(deltaY);
+	}
+
+	public setVelocityTowards(
+		target: Pick<Body, 'positionX' | 'positionY'>,
+		velocityPerSecond: number,
+	) {
+		const deltaX = target.positionX - this.positionX;
+		const deltaY = target.positionY - this.positionY;
+
+		this.velocityXPerSecond = velocityPerSecond > Math.abs(deltaX)
+			? deltaX
+			: velocityPerSecond * Math.sign(deltaX);
+		this.velocityYPerSecond = velocityPerSecond > Math.abs(deltaY)
+			? deltaY
+			: velocityPerSecond * Math.sign(deltaY);
 	}
 }

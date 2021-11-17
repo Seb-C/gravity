@@ -30,6 +30,10 @@ function createConfig() {
 			radius: 10,
 			types: new Array(100),
 		},
+		mouse: {
+			searchRadius: 5,
+			inducedVelocityPerSecond: 75,
+		},
 	};
 
 	for (let i = 0; i < particleTypes.length; i++) {

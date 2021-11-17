@@ -15,38 +15,33 @@ function init(config: Config) {
 	const sharedData = new SharedData(sharedBuffers);
 	const rootCluster = new Root(sharedData);
 	for (let i = 0; i < config.particles.amount; i++) {
-		rootCluster.add(
-			i,
-			new Node(
-				new Particle(
-					<ParticleId>(i+1),
-					config.canvas.width * Math.random() - (config.canvas.width / 2),
-					config.canvas.height * Math.random() - (config.canvas.height / 2),
-					config.particles.types[Math.floor(Math.random() * config.particles.types.length)],
-					config.particles.radius,
-				),
-			),
-		);
+		rootCluster.add(i, new Particle(
+			<ParticleId>(i+1),
+			config.canvas.width * Math.random() - (config.canvas.width / 2),
+			config.canvas.height * Math.random() - (config.canvas.height / 2),
+			config.particles.types[Math.floor(Math.random() * config.particles.types.length)],
+			config.particles.radius,
+		));
 	}
 
 	front.sendBuffers(sharedBuffers);
 
-	// TODO node could take a body instead of particle -> problem of updating the buffers
 	// TODO unit tests
-	// TODO finish this mouse handling
-	// TODO implement mass and gravity
-	front.onGetParticleIdFromPosition((positionX, positionY) => {
-		// TODO internally use a Collideable interface
-		// rootCluster.searchCollision(
-		// 	new Particle(
-		// 		0,
-		// 		positionX,
-		// 		positionY,
-		// 		type,
-		// 		0,
-		// 	),
-		// );
-		// front.sendParticleIdResponse();
+	// TODO handle object mass (accounted when transmitting cynetic energy in case of collision)
+	// TODO handle object gravity
+
+	front.onGetParticleIdsFromPosition((data) => {
+		const nodes = rootCluster.searchCollision(data);
+		front.sendParticleIdsResponse(nodes.map(node => node.particle.id));
+	});
+	front.onMoveParticle((id, positionX, positionY) => {
+		const particle = rootCluster.getParticleById(id);
+		if (particle != null) {
+			particle.setVelocityTowards(
+				{ positionX, positionY },
+				config.mouse.inducedVelocityPerSecond,
+			);
+		}
 	});
 
 	let lastTick = +new Date();

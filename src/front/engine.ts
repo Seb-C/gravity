@@ -6,13 +6,13 @@ export type OnReadyCallback = () => void;
 export type OnBuffersCallback = (buffers: SharedBuffers) => void;
 
 // private
-type OnParticleIdResponseCallback = (id: ParticleId|null) => void;
+type OnParticleIdsResponseCallback = (ids: ParticleId[]) => void;
 
 export class Engine {
 	private worker: Worker;
 	private onReadyCallback?: OnReadyCallback;
 	private onBuffersCallback?: OnBuffersCallback;
-	private onParticleIdResponseCallback?: OnParticleIdResponseCallback;
+	private onParticleIdsResponseCallback?: OnParticleIdsResponseCallback;
 
 	constructor() {
 		this.worker = new Worker('./static/engine.js');
@@ -25,12 +25,12 @@ export class Engine {
 					}
 				case 'buffers':
 					if (this.onBuffersCallback) {
-						this.onBuffersCallback(<SharedBuffers>event.data.buffers);
+						this.onBuffersCallback(event.data.buffers);
 						return;
 					}
-				case 'particleIdResponse':
-					if (this.onParticleIdResponseCallback) {
-						this.onParticleIdResponseCallback(<ParticleId>event.data.id || null);
+				case 'particleIdsResponse':
+					if (this.onParticleIdsResponseCallback) {
+						this.onParticleIdsResponseCallback(event.data.ids);
 						return;
 					}
 				default:
@@ -47,21 +47,28 @@ export class Engine {
 		this.onBuffersCallback = callback;
 	}
 
+	public sendMoveParticle(id: ParticleId, positionX: number, positionY: number) {
+		this.worker.postMessage({ type: 'moveParticle', id, positionX, positionY });
+	}
+
 	public sendConfig(config: Config) {
 		this.worker.postMessage({ type: 'config', config });
 	}
 
-	public async getParticleIdFromPosition(positionX: number, positionY: number): Promise<ParticleId|null> {
+	public async getParticleIdsFromPosition(input: {
+		positionX: number,
+		positionY: number,
+		radius: number,
+	}): Promise<ParticleId[]> {
 		return new Promise((resolve) => {
-			this.onParticleIdResponseCallback = (id: ParticleId|null) => {
-				resolve(id);
-				delete this.onParticleIdResponseCallback;
+			this.onParticleIdsResponseCallback = (ids: ParticleId[]) => {
+				resolve(ids);
+				delete this.onParticleIdsResponseCallback;
 			};
 
 			this.worker.postMessage({
-				type: 'getParticleIdFromPosition',
-				positionX,
-				positionY,
+				type: 'getParticleIdsFromPosition',
+				...input,
 			});
 		});
 	}

@@ -11,4 +11,8 @@ export interface Config {
 		amount: number,
 		types: ParticleType[],
 	},
+	mouse: {
+		searchRadius: number,
+		inducedVelocityPerSecond: number,
+	},
 }
