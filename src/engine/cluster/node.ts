@@ -1,5 +1,6 @@
 import { Particle } from '../particle';
 import { Cluster } from './cluster';
+import { Body } from './body';
 
 export class Node {
 	public particle: Particle;
@@ -10,7 +11,7 @@ export class Node {
 		this.parentCluster = this.parentCluster;
 	}
 
-	public doesCollide(node: Node): boolean {
-		return this.particle.doesCollide(node.particle);
+	public doesCollide(body: Body): boolean {
+		return this.particle.doesCollide(body);
 	}
 }

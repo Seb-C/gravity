@@ -2,6 +2,7 @@ import { Particle } from '../particle';
 import { Node } from './node';
 import { Cluster } from './cluster';
 import { SharedBuffers, SharedData } from '../../common/shared-data';
+import { Body } from './body';
 
 export type TreeAble = Cluster | Node;
 
@@ -104,7 +105,7 @@ export class Root {
 			const node = this.allNodes[i];
 			let hasMoved = node.particle.move(elapsedSeconds);
 
-			const collidedNodes = this.searchCollision(node);
+			const collidedNodes = this.searchCollision(node.particle);
 			for (let j = 0; j < collidedNodes.length; j++) {
 				node.particle.updateFromCollision(collidedNodes[j].particle, elapsedSeconds);
 			}
@@ -118,16 +119,16 @@ export class Root {
 	}
 
 	/**
-	 * Searches in the tree if the given node collides with any other.
+	 * Searches in the tree if the given body collides with any other.
 	 * If it does, then the collided node will be returned.
 	 */
-	public searchCollision(node: Node): Node[] {
+	public searchCollision(body: Body): Node[] {
 		if (this.root === null) {
 			return [];
 		}
 
 		if (this.root instanceof Node) {
-			if (this.root.particle.doesCollide(node.particle)) {
+			if (this.root.particle.doesCollide(body)) {
 				return [this.root];
 			} else {
 				return [];
@@ -139,14 +140,14 @@ export class Root {
 
 		let currentCluster: Cluster | undefined;
 		while (currentCluster = stack.pop()) {
-			if (currentCluster.left.doesCollide(node)) {
+			if (currentCluster.left.doesCollide(body)) {
 				if (currentCluster.left instanceof Node) {
 					collidingNodes.push(currentCluster.left);
 				} else {
 					stack.push(currentCluster.left);
 				}
 			}
-			if (currentCluster.right.doesCollide(node)) {
+			if (currentCluster.right.doesCollide(body)) {
 				if (currentCluster.right instanceof Node) {
 					collidingNodes.push(currentCluster.right);
 				} else {
@@ -158,9 +159,10 @@ export class Root {
 		return collidingNodes;
 	}
 
-	public costOfAdding(node: Node, target: Cluster | Node): number {
-		const radiusBefore = target instanceof Node ? target.particle.radius : target.radius;
-		const { radius: radiusAfter } = Cluster.computeBoundaries(node, target);
+	public costOfAdding(node: Node, target: TreeAble): number {
+		const targetBody = target instanceof Node ? target.particle : target;
+		const radiusBefore = targetBody.radius;
+		const { radius: radiusAfter } = Cluster.computeBoundaries(node.particle, targetBody);
 
 		// Returning the increase of the cluster's area as a cost
 		return (Math.PI * radiusAfter * radiusAfter) - (Math.PI * radiusBefore * radiusBefore);

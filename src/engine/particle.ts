@@ -1,10 +1,11 @@
 import { ParticleType } from '../common/particle-type';
 import { Particle as ParticleInterface, ParticleId } from '../common/particle';
+import { Body } from './cluster/body';
 
 export const MIN_VELOCITY_PER_SECOND = 0.01;
 export const COLLISION_PUSHBACK_SECONDS = 0.2;
 
-export class Particle implements ParticleInterface {
+export class Particle implements ParticleInterface, Body {
 	public id: ParticleId;
 	public positionX: number;
 	public positionY: number;
@@ -50,25 +51,25 @@ export class Particle implements ParticleInterface {
 		return true;
 	}
 
-	public doesCollide(particle: Particle): boolean {
-		if (particle === this) {
+	public doesCollide(body: Body): boolean {
+		if (body === this) {
 			return false;
 		}
 
-		const distance = this.distance(particle);
-		if (distance >= (this.radius + particle.radius)) {
+		const distance = this.distance(body);
+		if (distance >= (this.radius + body.radius)) {
 			return false
 		}
 
 		return true;
 	}
 
-	public updateFromCollision(particle: Particle, elapsedSeconds: number) {
-		const pushbackPerSecond = particle.radius / COLLISION_PUSHBACK_SECONDS;
+	public updateFromCollision(body: Body, elapsedSeconds: number) {
+		const pushbackPerSecond = body.radius / COLLISION_PUSHBACK_SECONDS;
 		const currentPushback = pushbackPerSecond * elapsedSeconds;
 
-		let deltaX = this.positionX - particle.positionX;
-		let deltaY = this.positionY - particle.positionY;
+		let deltaX = this.positionX - body.positionX;
+		let deltaY = this.positionY - body.positionY;
 
 		this.positionX += currentPushback > Math.abs(deltaX)
 			? deltaX
@@ -78,9 +79,9 @@ export class Particle implements ParticleInterface {
 			: currentPushback * Math.sign(deltaY);
 	}
 
-	public distance(particle: Particle): number {
-		const deltaX = this.positionX - particle.positionX;
-		const deltaY = this.positionY - particle.positionY;
+	public distance(body: Body): number {
+		const deltaX = this.positionX - body.positionX;
+		const deltaY = this.positionY - body.positionY;
 		return Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 	}
 }

@@ -1,7 +1,8 @@
 import { TreeAble } from './root';
 import { Node } from './node';
+import { Body } from './body';
 
-export class Cluster {
+export class Cluster implements Body {
 	public left: TreeAble;
 	public right: TreeAble;
 	public parentCluster: Cluster | null;
@@ -34,7 +35,10 @@ export class Cluster {
 	}
 
 	public updateBoundaries() {
-		const { positionX, positionY, radius } = Cluster.computeBoundaries(this.left, this.right);
+		const { positionX, positionY, radius } = Cluster.computeBoundaries(
+			this.left instanceof Node ? this.left.particle : this.left,
+			this.right instanceof Node ? this.right.particle : this.right,
+		);
 		const hasChanged = (
 			positionX != this.positionX
 			|| positionY != this.positionY
@@ -50,7 +54,7 @@ export class Cluster {
 		}
 	}
 
-	public static computeBoundaries(left: TreeAble, right: TreeAble) {
+	public static computeBoundaries(left: Body, right: Body) {
 		const leftElement = left instanceof Node ? left.particle : left;
 		const rightElement = right instanceof Node ? right.particle : right;
 
@@ -67,15 +71,15 @@ export class Cluster {
 		return { positionX, positionY, radius }
 	}
 
-	public distance(node: Node): number {
-		const deltaX = this.positionX - node.particle.positionX;
-		const deltaY = this.positionY - node.particle.positionY;
+	public distance(body: Body): number {
+		const deltaX = this.positionX - body.positionX;
+		const deltaY = this.positionY - body.positionY;
 		return Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 	}
 
-	public doesCollide(node: Node): boolean {
-		const distance = this.distance(node);
-		if (distance >= (this.radius + node.particle.radius)) {
+	public doesCollide(body: Body): boolean {
+		const distance = this.distance(body);
+		if (distance >= (this.radius + body.radius)) {
 			return false
 		}
 

@@ -32,8 +32,8 @@ function init(config: Config) {
 	front.sendBuffers(sharedBuffers);
 
 	front.onGetParticleIdFromPosition((positionX, positionY) => {
+		// TODO internally use a Collideable interface
 		// rootCluster.searchCollision(
-		// 	// TODO
 		// 	new Particle(
 		// 		0,
 		// 		positionX,
@@ -42,7 +42,7 @@ function init(config: Config) {
 		// 		0,
 		// 	),
 		// );
-		front.sendParticleIdResponse(<any>42);
+		// front.sendParticleIdResponse();
 	});
 
 	let lastTick = +new Date();
