@@ -31,6 +31,10 @@ function init(config: Config) {
 
 	front.sendBuffers(sharedBuffers);
 
+	// TODO node could take a body instead of particle -> problem of updating the buffers
+	// TODO unit tests
+	// TODO finish this mouse handling
+	// TODO implement mass and gravity
 	front.onGetParticleIdFromPosition((positionX, positionY) => {
 		// TODO internally use a Collideable interface
 		// rootCluster.searchCollision(

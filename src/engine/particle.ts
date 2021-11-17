@@ -51,19 +51,6 @@ export class Particle implements ParticleInterface, Body {
 		return true;
 	}
 
-	public doesCollide(body: Body): boolean {
-		if (body === this) {
-			return false;
-		}
-
-		const distance = this.distance(body);
-		if (distance >= (this.radius + body.radius)) {
-			return false
-		}
-
-		return true;
-	}
-
 	public updateFromCollision(body: Body, elapsedSeconds: number) {
 		const pushbackPerSecond = body.radius / COLLISION_PUSHBACK_SECONDS;
 		const currentPushback = pushbackPerSecond * elapsedSeconds;
@@ -77,11 +64,5 @@ export class Particle implements ParticleInterface, Body {
 		this.positionY += currentPushback > Math.abs(deltaY)
 			? deltaY
 			: currentPushback * Math.sign(deltaY);
-	}
-
-	public distance(body: Body): number {
-		const deltaX = this.positionX - body.positionX;
-		const deltaY = this.positionY - body.positionY;
-		return Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 	}
 }

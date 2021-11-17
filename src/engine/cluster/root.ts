@@ -2,7 +2,7 @@ import { Particle } from '../particle';
 import { Node } from './node';
 import { Cluster } from './cluster';
 import { SharedBuffers, SharedData } from '../../common/shared-data';
-import { Body } from './body';
+import { Body, bodiesDoesCollide } from './body';
 
 export type TreeAble = Cluster | Node;
 
@@ -128,7 +128,7 @@ export class Root {
 		}
 
 		if (this.root instanceof Node) {
-			if (this.root.particle.doesCollide(body)) {
+			if (bodiesDoesCollide(this.root.particle, body)) {
 				return [this.root];
 			} else {
 				return [];
@@ -140,14 +140,17 @@ export class Root {
 
 		let currentCluster: Cluster | undefined;
 		while (currentCluster = stack.pop()) {
-			if (currentCluster.left.doesCollide(body)) {
+			const leftBody = currentCluster.left instanceof Node ? currentCluster.left.particle : currentCluster.left;
+			if (bodiesDoesCollide(leftBody, body)) {
 				if (currentCluster.left instanceof Node) {
 					collidingNodes.push(currentCluster.left);
 				} else {
 					stack.push(currentCluster.left);
 				}
 			}
-			if (currentCluster.right.doesCollide(body)) {
+
+			const rightBody = currentCluster.right instanceof Node ? currentCluster.right.particle : currentCluster.right;
+			if (bodiesDoesCollide(rightBody, body)) {
 				if (currentCluster.right instanceof Node) {
 					collidingNodes.push(currentCluster.right);
 				} else {
