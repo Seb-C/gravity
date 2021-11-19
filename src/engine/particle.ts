@@ -1,4 +1,5 @@
 import { ParticleType } from '../common/particle-type';
+import { ParticleTypeId } from '../common/particle-type';
 import { Particle as ParticleInterface, ParticleId } from '../common/particle';
 import { Body } from './cluster/body';
 
@@ -10,7 +11,7 @@ export class Particle implements ParticleInterface, Body {
 	public id: ParticleId;
 	public positionX: number;
 	public positionY: number;
-	public typeId: number;
+	public typeId: ParticleTypeId;
 	public radius: number;
 
 	public velocityXPerSecond: number = 0;

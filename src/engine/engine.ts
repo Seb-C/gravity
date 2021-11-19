@@ -26,7 +26,9 @@ function init(config: Config) {
 
 	front.sendBuffers(sharedBuffers);
 
-	// TODO unit tests
+	// TODO unit test engine/cluster
+	// TODO unit test engine
+	// TODO unit test front
 	// TODO handle object mass (accounted when transmitting cynetic energy in case of collision)
 	// TODO handle object gravity
 
