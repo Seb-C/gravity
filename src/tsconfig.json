@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
-    "module": "AMD",
+    "module": "UMD",
     "target": "ES5",
-    "lib": ["ES2021"],
+    "lib": ["ES2021", "DOM", "webworker"],
     "removeComments": true,
     "outDir": "../dist",
     "sourceMap": true,

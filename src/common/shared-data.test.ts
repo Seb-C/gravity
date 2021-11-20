@@ -16,17 +16,17 @@ describe('SharedData', () => {
 			};
 			data.set(1, particle);
 
-			expect(data.positionsX[0]).toBe(0);
-			expect(data.positionsX[1]).toBe(2);
-			expect(data.positionsX[2]).toBe(0);
+			expect(data.positionsX[0]).toEqual(0);
+			expect(data.positionsX[1]).toEqual(2);
+			expect(data.positionsX[2]).toEqual(0);
 
-			expect(data.positionsY[0]).toBe(0);
-			expect(data.positionsY[1]).toBe(3);
-			expect(data.positionsY[2]).toBe(0);
+			expect(data.positionsY[0]).toEqual(0);
+			expect(data.positionsY[1]).toEqual(3);
+			expect(data.positionsY[2]).toEqual(0);
 
-			expect(data.typeIds[0]).toBe(0);
-			expect(data.typeIds[1]).toBe(4);
-			expect(data.typeIds[2]).toBe(0);
+			expect(data.typeIds[0]).toEqual(0);
+			expect(data.typeIds[1]).toEqual(4);
+			expect(data.typeIds[2]).toEqual(0);
 		});
 	});
 });

@@ -29,7 +29,6 @@ function init(config: Config) {
 	// TODO unit test engine/cluster/cluster
 	// TODO unit test engine/cluster/root
 	// TODO unit test engine/particle
-	// TODO unit test front/mouse-handler (mouseEventToPosition)
 	// TODO handle object mass (accounted when transmitting cynetic energy in case of collision)
 	// TODO handle object gravity
 

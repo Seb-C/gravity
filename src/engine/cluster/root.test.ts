@@ -55,64 +55,64 @@ describe('Root', () => {
 			rootCluster.removeFromTree(nodeB);
 
 			expect(rootCluster.root).toBe(clusterA);
-			expect(clusterA.parentCluster).toBe(null);
+			expect(clusterA.parentCluster).toBeNull();
 			expect(clusterA.left).toBe(nodeA);
 			expect(clusterA.right).toBe(nodeC);
 			expect(nodeA.parentCluster).toBe(clusterA);
 			expect(nodeC.parentCluster).toBe(clusterA);
-			expect(nodeB.parentCluster).toBe(null);
+			expect(nodeB.parentCluster).toBeNull();
 		});
 		it('right of a right cluster', () => {
 			const { nodeA, nodeB, nodeC, clusterA, clusterB, rootCluster } = createRightTree();
 			rootCluster.removeFromTree(nodeC);
 
 			expect(rootCluster.root).toBe(clusterA);
-			expect(clusterA.parentCluster).toBe(null);
+			expect(clusterA.parentCluster).toBeNull();
 			expect(clusterA.left).toBe(nodeA);
 			expect(clusterA.right).toBe(nodeB);
 			expect(nodeA.parentCluster).toBe(clusterA);
 			expect(nodeB.parentCluster).toBe(clusterA);
-			expect(nodeC.parentCluster).toBe(null);
+			expect(nodeC.parentCluster).toBeNull();
 		});
 		it('left of a left cluster', () => {
 			const { nodeA, nodeB, nodeC, clusterA, clusterB, rootCluster } = createLeftTree();
 			rootCluster.removeFromTree(nodeA);
 
 			expect(rootCluster.root).toBe(clusterA);
-			expect(clusterA.parentCluster).toBe(null);
+			expect(clusterA.parentCluster).toBeNull();
 			expect(clusterA.left).toBe(nodeB);
 			expect(clusterA.right).toBe(nodeC);
 			expect(nodeB.parentCluster).toBe(clusterA);
 			expect(nodeC.parentCluster).toBe(clusterA);
-			expect(nodeA.parentCluster).toBe(null);
+			expect(nodeA.parentCluster).toBeNull();
 		});
 		it('right of a left cluster', () => {
 			const { nodeA, nodeB, nodeC, clusterA, clusterB, rootCluster } = createLeftTree();
 			rootCluster.removeFromTree(nodeB);
 
 			expect(rootCluster.root).toBe(clusterA);
-			expect(clusterA.parentCluster).toBe(null);
+			expect(clusterA.parentCluster).toBeNull();
 			expect(clusterA.left).toBe(nodeA);
 			expect(clusterA.right).toBe(nodeC);
 			expect(nodeA.parentCluster).toBe(clusterA);
 			expect(nodeC.parentCluster).toBe(clusterA);
-			expect(nodeB.parentCluster).toBe(null);
+			expect(nodeB.parentCluster).toBeNull();
 		});
 		it('left of the root cluster', () => {
 			const { nodeA, nodeB, cluster, rootCluster } = createOneLevelTree();
 			rootCluster.removeFromTree(nodeA);
 
 			expect(rootCluster.root).toBe(nodeB);
-			expect(nodeB.parentCluster).toBe(null);
-			expect(nodeA.parentCluster).toBe(null);
+			expect(nodeB.parentCluster).toBeNull();
+			expect(nodeA.parentCluster).toBeNull();
 		});
 		it('right of the root cluster', () => {
 			const { nodeA, nodeB, cluster, rootCluster } = createOneLevelTree();
 			rootCluster.removeFromTree(nodeB);
 
 			expect(rootCluster.root).toBe(nodeA);
-			expect(nodeA.parentCluster).toBe(null);
-			expect(nodeB.parentCluster).toBe(null);
+			expect(nodeA.parentCluster).toBeNull();
+			expect(nodeB.parentCluster).toBeNull();
 		});
 		it('root', () => {
 			const node = new Node(new Particle(<ParticleId>1, 0, 0, type, 1));

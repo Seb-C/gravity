@@ -3,7 +3,7 @@
     "lib": ["ES2021", "webworker"],
     "outDir": "../../dist/engine",
     "rootDir": ".",
-    "module": "AMD",
+    "module": "UMD",
     "target": "ES5",
     "removeComments": true,
     "sourceMap": true,

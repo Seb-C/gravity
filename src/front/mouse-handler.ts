@@ -24,7 +24,7 @@ export class MouseHandler {
 
 	bindEvents() {
 		this.canvas.addEventListener('mousedown', (event: MouseEvent) => {
-			const [positionX, positionY] = this.mouseEventToPosition(event);
+			const { positionX, positionY } = this.mouseEventToPosition(event);
 			const radius = this.config.mouse.searchRadius;
 			this.engine
 				.getParticleIdsFromPosition({ positionX, positionY, radius })
@@ -34,7 +34,7 @@ export class MouseHandler {
 		});
 		this.canvas.addEventListener('mousemove', (event: MouseEvent) => {
 			if (this.selectedParticleId !== null) {
-				const [positionX, positionY] = this.mouseEventToPosition(event);
+				const { positionX, positionY } = this.mouseEventToPosition(event);
 				this.engine.sendMoveParticle(this.selectedParticleId, positionX, positionY);
 			}
 		});
@@ -45,9 +45,9 @@ export class MouseHandler {
 
 	mouseEventToPosition(event: MouseEvent) {
 		const { width, height } = this.config.canvas;
-		return [
-			event.offsetX - (width / 2),
-			(height - event.offsetY) - (height / 2),
-		];
+		return {
+			positionX: event.offsetX - (width / 2),
+			positionY: (height - event.offsetY) - (height / 2),
+		};
 	};
 }

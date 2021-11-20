@@ -3,7 +3,7 @@
     "lib": ["ES2021", "dom"],
     "outDir": "../../dist/front",
     "rootDir": ".",
-    "module": "AMD",
+    "module": "UMD",
     "target": "ES5",
     "removeComments": true,
     "sourceMap": true,
