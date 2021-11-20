@@ -9,7 +9,7 @@ export function bodiesDoesCollide(a: Body, b: Body): boolean {
 		return false;
 	}
 
-	const distance = bodiesDistance(a, b);
+	const distance = bodiesDistanceCenter(a, b);
 	if (distance >= (a.radius + b.radius)) {
 		return false
 	}
@@ -17,7 +17,7 @@ export function bodiesDoesCollide(a: Body, b: Body): boolean {
 	return true;
 };
 
-export function bodiesDistance(a: Body, b: Body): number {
+export function bodiesDistanceCenter(a: Body, b: Body): number {
 	const deltaX = a.positionX - b.positionX;
 	const deltaY = a.positionY - b.positionY;
 	return Math.sqrt(deltaX * deltaX + deltaY * deltaY);

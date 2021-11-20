@@ -1,6 +1,6 @@
 import { TreeAble } from './root';
 import { Node } from './node';
-import { Body, bodiesDistance } from './body';
+import { Body, bodiesDistanceCenter } from './body';
 
 export class Cluster implements Body {
 	public left: TreeAble;
@@ -63,7 +63,7 @@ export class Cluster implements Body {
 		const positionY = leftElement.positionY + ((rightElement.positionY - leftElement.positionY) / 2);
 
 		// Approximating the radius from the distance between the two circles
-		const distance = bodiesDistance(leftElement, rightElement);
+		const distance = bodiesDistanceCenter(leftElement, rightElement);
 		const radius = (distance / 2) + Math.max(leftElement.radius, rightElement.radius);
 
 		return { positionX, positionY, radius }
