@@ -81,7 +81,7 @@ describe('Root', () => {
 		});
 	});
 	describe('removeFromTree', () => {
-		const type: ParticleType = { id: <ParticleTypeId>1 };
+		const type: ParticleType = { id: <ParticleTypeId>1, mass: 1 };
 		const mockedSharedData: SharedData = <any>{};
 
 		const createLeftTree = () => {
@@ -256,7 +256,7 @@ describe('Root', () => {
 	});
 	describe('costOfAdding', () => {
 		it('does not give the same result when adding the same radius', () => {
-			const type: ParticleType = { id: <ParticleTypeId>1 };
+			const type: ParticleType = { id: <ParticleTypeId>1, mass: 1 };
 			const existingNode1 = new Node(new Particle(<ParticleId>1, 0, 0, type, 10));
 			const nodeToAdd1 = new Node(new Particle(<ParticleId>1, 10, 0, type, 10));
 

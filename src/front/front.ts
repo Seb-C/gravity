@@ -19,9 +19,30 @@ engineWorker.onBuffers((buffers: SharedBuffers) => {
 
 function createConfig() {
 	particleTypes = [
-		new ParticleType(<ParticleTypeId>1, 0, 1, 0), // green
-		new ParticleType(<ParticleTypeId>2, 1, 0.8, 0), // yellow
-		new ParticleType(<ParticleTypeId>3, 1, 0, 0), // red
+		new ParticleType({
+			// green (light) particle
+			id: <ParticleTypeId>1,
+			colorRed: 0,
+			colorGreen: 1,
+			colorBlue: 0,
+			mass: 1,
+		}),
+		new ParticleType({
+			// yellow (average) particle
+			id: <ParticleTypeId>2,
+			colorRed: 1,
+			colorGreen: 0.8,
+			colorBlue: 0,
+			mass: 2,
+		}),
+		new ParticleType({
+			// red (heavy) particle
+			id: <ParticleTypeId>3,
+			colorRed: 1,
+			colorGreen: 0,
+			colorBlue: 0,
+			mass: 3,
+		}),
 	];
 
 	config = {
@@ -33,7 +54,7 @@ function createConfig() {
 			texturePrecision: 64,
 			amount: 1000,
 			radius: 10,
-			types: particleTypes.map(type => ({ id: type.id })),
+			types: particleTypes.map(type => type.onlySharedProperties()),
 		},
 		mouse: {
 			searchRadius: 5,

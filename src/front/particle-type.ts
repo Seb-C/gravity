@@ -1,22 +1,25 @@
 import { Config } from '../common/config';
-import { ParticleTypeId } from '../common/particle-type';
+import { ParticleType as SharedParticleType, ParticleTypeId } from '../common/particle-type';
 
 export class ParticleType {
 	public id: ParticleTypeId;
 	public colorRed: number;
 	public colorGreen: number;
 	public colorBlue: number;
+	public mass: number;
 
-	constructor(
+	constructor(properties: {
 		id: ParticleTypeId,
 		colorRed: number,
 		colorGreen: number,
 		colorBlue: number,
-	) {
-		this.id = id;
-		this.colorRed = colorRed;
-		this.colorGreen = colorGreen;
-		this.colorBlue = colorBlue;
+		mass: number,
+	}) {
+		this.id = properties.id;
+		this.colorRed = properties.colorRed;
+		this.colorGreen = properties.colorGreen;
+		this.colorBlue = properties.colorBlue;
+		this.mass = properties.mass;
 	}
 
 	static createTexture(window: Window, config: Config): HTMLCanvasElement {
@@ -41,5 +44,12 @@ export class ParticleType {
 		context.fill();
 
 		return canvasTexture;
+	}
+
+	public onlySharedProperties(): SharedParticleType {
+		return {
+			id: this.id,
+			mass: this.mass,
+		};
 	}
 }
