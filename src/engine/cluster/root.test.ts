@@ -1,6 +1,6 @@
 import "jasmine";
 import { Cluster } from './cluster';
-import { Root } from './root';
+import { Root, TreeAble } from './root';
 import { Node } from './node';
 import { Particle } from '../particle';
 import { ParticleType, ParticleTypeId } from '../../common/particle-type';
@@ -11,19 +11,74 @@ describe('Root', () => {
 	describe('add', () => {
 		it('adds and sets the required variables', () => {
 			const sharedData = jasmine.createSpyObj('sharedData', ['set']);
-			const root = new Root(sharedData);
+			const rootCluster = new Root(sharedData);
 			const particle = new Particle(<ParticleId>1, 10, 0, <any>{}, 10);
-			global.spyOn(root, 'addToTree');
-			root.add(0, particle);
+			global.spyOn(rootCluster, 'addToTree');
+			rootCluster.add(0, particle);
 			expect(sharedData.set).toHaveBeenCalledWith(0, particle);
-			expect(root.allNodes.length).toBe(1);
-			expect(root.allNodes[0].particle).toBe(particle);
-			expect(root.particlesById.get(particle.id)).toBe(particle);
-			expect(root.addToTree).toHaveBeenCalledWith(new Node(particle));
+			expect(rootCluster.allNodes.length).toBe(1);
+			expect(rootCluster.allNodes[0].particle).toBe(particle);
+			expect(rootCluster.particlesById.get(particle.id)).toBe(particle);
+			expect(rootCluster.addToTree).toHaveBeenCalledWith(new Node(particle));
 		});
 	});
 	describe('addToTree', () => {
-		// TODO
+		const createTestTree = () => {
+			const sharedData = jasmine.createSpyObj('sharedData', ['set']);
+			const rootCluster = new Root(sharedData);
+
+			const nodeA = new Node(new Particle(<ParticleId>1, -10, 0, <any>{}, 1));
+			const nodeB = new Node(new Particle(<ParticleId>2, 10, 10, <any>{}, 1));
+			const nodeC = new Node(new Particle(<ParticleId>3, 10, -10, <any>{}, 1));
+
+			const clusterB = Cluster.createAndSetParents(nodeB, nodeC, null);
+			const clusterA = Cluster.createAndSetParents(nodeA, clusterB, null);
+
+			rootCluster.root = clusterA;
+
+			return { rootCluster, clusterA, clusterB, nodeA, nodeB, nodeC };
+		};
+		it('no existing root', () => {
+			const rootCluster = new Root(<any>{});
+			const node = new Node(new Particle(<ParticleId>1, 0, 0, <any>{}, 1));
+			rootCluster.addToTree(node);
+			expect(rootCluster.root).toBe(node);
+		});
+		it('existing root is a node', () => {
+			const rootCluster = new Root(<any>{});
+			const existingNode = new Node(new Particle(<ParticleId>1, 0, 0, <any>{}, 1));
+			const nodeToAdd = new Node(new Particle(<ParticleId>2, 0, 0, <any>{}, 1));
+			rootCluster.root = <TreeAble>existingNode;
+			rootCluster.addToTree(nodeToAdd);
+			expect(rootCluster.root).toBeInstanceOf(Cluster);
+			expect((<Cluster>rootCluster.root).left).toBe(existingNode);
+			expect((<Cluster>rootCluster.root).right).toBe(nodeToAdd);
+			expect(existingNode.parentCluster).toBe(<Cluster>rootCluster.root);
+			expect(nodeToAdd.parentCluster).toBe(<Cluster>rootCluster.root);
+			expect(nodeToAdd.parentCluster).toBe(<Cluster>rootCluster.root);
+		});
+		it('add to the closest place, to the right', () => {
+			const { rootCluster, clusterB, nodeB } = createTestTree();
+			const nodeToAdd = new Node(new Particle(<ParticleId>4, 10, 9, <any>{}, 1));
+			rootCluster.addToTree(nodeToAdd);
+
+			expect(clusterB.left).toBeInstanceOf(Cluster);
+			expect((<Cluster>clusterB.left).left).toBe(nodeB);
+			expect((<Cluster>clusterB.left).right).toBe(nodeToAdd);
+			expect(nodeB.parentCluster).toBe(<Cluster>clusterB.left);
+			expect(nodeToAdd.parentCluster).toBe(<Cluster>clusterB.left);
+		});
+		it('add to the closest place, to the left', () => {
+			const { rootCluster, clusterB, nodeC } = createTestTree();
+			const nodeToAdd = new Node(new Particle(<ParticleId>4, 10, -9, <any>{}, 1));
+			rootCluster.addToTree(nodeToAdd);
+
+			expect(clusterB.right).toBeInstanceOf(Cluster);
+			expect((<Cluster>clusterB.right).left).toBe(nodeC);
+			expect((<Cluster>clusterB.right).right).toBe(nodeToAdd);
+			expect(nodeC.parentCluster).toBe(<Cluster>clusterB.right);
+			expect(nodeToAdd.parentCluster).toBe(<Cluster>clusterB.right);
+		});
 	});
 	describe('removeFromTree', () => {
 		const type: ParticleType = { id: <ParticleTypeId>1 };
@@ -152,10 +207,10 @@ describe('Root', () => {
 			const existingNode2 = new Node(new Particle(<ParticleId>1, 0, 0, type, 100));
 			const nodeToAdd2 = new Node(new Particle(<ParticleId>1, 100, 0, type, 10));
 
-			const root = new Root(<SharedData>{});
+			const rootCluster = new Root(<SharedData>{});
 
-			const cost1 = root.costOfAdding(existingNode1, nodeToAdd1);
-			const cost2 = root.costOfAdding(existingNode2, nodeToAdd2);
+			const cost1 = rootCluster.costOfAdding(existingNode1, nodeToAdd1);
+			const cost2 = rootCluster.costOfAdding(existingNode2, nodeToAdd2);
 
 			expect(cost2).toBeGreaterThan(cost1);;
 		});
