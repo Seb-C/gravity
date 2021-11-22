@@ -1,3 +1,4 @@
+import "jasmine";
 import { TreeAble } from './root';
 import { Cluster } from './cluster';
 import { Body, bodiesDistanceCenter } from './body';
