@@ -8,6 +8,23 @@ import { SharedBuffers, SharedData } from '../../common/shared-data';
 import { ParticleId } from '../../common/particle';
 
 describe('Root', () => {
+	describe('add', () => {
+		it('adds and sets the required variables', () => {
+			const sharedData = jasmine.createSpyObj('sharedData', ['set']);
+			const root = new Root(sharedData);
+			const particle = new Particle(<ParticleId>1, 10, 0, <any>{}, 10);
+			global.spyOn(root, 'addToTree');
+			root.add(0, particle);
+			expect(sharedData.set).toHaveBeenCalledWith(0, particle);
+			expect(root.allNodes.length).toBe(1);
+			expect(root.allNodes[0].particle).toBe(particle);
+			expect(root.particlesById.get(particle.id)).toBe(particle);
+			expect(root.addToTree).toHaveBeenCalledWith(new Node(particle));
+		});
+	});
+	describe('addToTree', () => {
+		// TODO
+	});
 	describe('removeFromTree', () => {
 		const type: ParticleType = { id: <ParticleTypeId>1 };
 		const mockedSharedData: SharedData = <any>{};
@@ -121,6 +138,26 @@ describe('Root', () => {
 			rootCluster.removeFromTree(node);
 
 			expect(rootCluster.root).toBeNull();
+		});
+	});
+	describe('searchCollision', () => {
+		// TODO
+	});
+	describe('costOfAdding', () => {
+		it('does not give the same result when adding the same radius', () => {
+			const type: ParticleType = { id: <ParticleTypeId>1 };
+			const existingNode1 = new Node(new Particle(<ParticleId>1, 0, 0, type, 10));
+			const nodeToAdd1 = new Node(new Particle(<ParticleId>1, 10, 0, type, 10));
+
+			const existingNode2 = new Node(new Particle(<ParticleId>1, 0, 0, type, 100));
+			const nodeToAdd2 = new Node(new Particle(<ParticleId>1, 100, 0, type, 10));
+
+			const root = new Root(<SharedData>{});
+
+			const cost1 = root.costOfAdding(existingNode1, nodeToAdd1);
+			const cost2 = root.costOfAdding(existingNode2, nodeToAdd2);
+
+			expect(cost2).toBeGreaterThan(cost1);;
 		});
 	});
 });
