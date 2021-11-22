@@ -196,7 +196,63 @@ describe('Root', () => {
 		});
 	});
 	describe('searchCollision', () => {
-		// TODO
+		const createTestTree = () => {
+			const sharedData = jasmine.createSpyObj('sharedData', ['set']);
+			const rootCluster = new Root(sharedData);
+
+			const nodeA = new Node(new Particle(<ParticleId>1, 0, 10, <any>{}, 1));
+			const nodeB = new Node(new Particle(<ParticleId>2, -5, 0, <any>{}, 10));
+			const nodeC = new Node(new Particle(<ParticleId>2, 5, 0, <any>{}, 10));
+
+			const clusterB = Cluster.createAndSetParents(nodeB, nodeC, null);
+			const clusterA = Cluster.createAndSetParents(clusterB, nodeA, null);
+			rootCluster.root = clusterA;
+
+			return { rootCluster, clusterA, clusterB, nodeA, nodeB, nodeC };
+		};
+		it('is root', () => {
+			const rootCluster = new Root(<any>{});
+			const particle = new Particle(<ParticleId>1, 0, 0, <any>{}, 1);
+			const node = new Node(particle);
+			rootCluster.root = node;
+			expect(rootCluster.searchCollision(particle).length).toBe(0);
+		});
+		it('root is node, collides', () => {
+			const rootCluster = new Root(<any>{});
+			const existingNode = new Node(new Particle(<ParticleId>1, 0, 0, <any>{}, 1));
+			rootCluster.root = existingNode;
+
+			const particle = new Particle(<ParticleId>1, 1, 1, <any>{}, 1);
+			expect(rootCluster.searchCollision(particle)).toEqual([existingNode]);
+		});
+		it('root is node, does not collides', () => {
+			const rootCluster = new Root(<any>{});
+			const existingNode = new Node(new Particle(<ParticleId>1, 0, 0, <any>{}, 1));
+			rootCluster.root = existingNode;
+
+			const particle = new Particle(<ParticleId>1, 1, 1, <any>{}, 1);
+			expect(rootCluster.searchCollision(particle)).toEqual([existingNode]);
+		});
+		it('collides with both', () => {
+			const { rootCluster, nodeB, nodeC } = createTestTree();
+			const particle = new Particle(<ParticleId>1, 0, 0, <any>{}, 1);
+			expect(rootCluster.searchCollision(particle)).toEqual([nodeB, nodeC]);
+		});
+		it('collides with left only', () => {
+			const { rootCluster, nodeB } = createTestTree();
+			const particle = new Particle(<ParticleId>1, -7, 0, <any>{}, 1);
+			expect(rootCluster.searchCollision(particle)).toEqual([nodeB]);
+		});
+		it('collides with right only', () => {
+			const { rootCluster, nodeC } = createTestTree();
+			const particle = new Particle(<ParticleId>1, 7, 0, <any>{}, 1);
+			expect(rootCluster.searchCollision(particle)).toEqual([nodeC]);
+		});
+		it('collides with none', () => {
+			const { rootCluster } = createTestTree();
+			const particle = new Particle(<ParticleId>1, 0, -10, <any>{}, 1);
+			expect(rootCluster.searchCollision(particle).length).toBe(0);
+		});
 	});
 	describe('costOfAdding', () => {
 		it('does not give the same result when adding the same radius', () => {
