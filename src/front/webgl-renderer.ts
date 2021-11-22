@@ -93,7 +93,7 @@ export class WebGLRenderer {
 			void main(void) {
 				gl_Position = vec4(positionX / float(canvasWidth), positionY / float(canvasHeight), 0.0, 1.0);
 				gl_PointSize = float(${this.config.particles.radius*2});
-				particleColor = particleTypeColors[int(typeId)];
+				particleColor = particleTypeColors[int(typeId)-1];
 			}
 		`;
 

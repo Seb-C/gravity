@@ -4,7 +4,7 @@ import { SharedData, SharedBuffers } from '../common/shared-data';
 import { ParticleTypeId } from '../common/particle-type';
 import { WebGLRenderer } from './webgl-renderer';
 import { MouseHandler } from './mouse-handler';
-import { Engine} from './engine';
+import { Engine } from './engine';
 
 let config: Config;
 let sharedData: SharedData;
@@ -18,7 +18,12 @@ engineWorker.onBuffers((buffers: SharedBuffers) => {
 });
 
 function createConfig() {
-	particleTypes = new Array(100);
+	particleTypes = [
+		new ParticleType(<ParticleTypeId>1, 0, 1, 0), // green
+		new ParticleType(<ParticleTypeId>2, 1, 0.8, 0), // yellow
+		new ParticleType(<ParticleTypeId>3, 1, 0, 0), // red
+	];
+
 	config = {
 		canvas: {
 			width: 1000,
@@ -28,26 +33,13 @@ function createConfig() {
 			texturePrecision: 64,
 			amount: 1000,
 			radius: 10,
-			types: new Array(100),
+			types: particleTypes.map(type => ({ id: type.id })),
 		},
 		mouse: {
 			searchRadius: 5,
 			inducedVelocityPerSecond: 75,
 		},
 	};
-
-	for (let i = 0; i < particleTypes.length; i++) {
-		const particleTypeId = <ParticleTypeId>i;
-		config.particles.types[i] = {
-			id: particleTypeId,
-		};
-		particleTypes[i] = new ParticleType(
-			particleTypeId,
-			Math.random(),
-			Math.random(),
-			Math.random(),
-		);
-	}
 
 	engineWorker.sendConfig(config);
 }
