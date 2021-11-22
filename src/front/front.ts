@@ -33,7 +33,7 @@ function createConfig() {
 			colorRed: 1,
 			colorGreen: 0.8,
 			colorBlue: 0,
-			mass: 2,
+			mass: 5,
 		}),
 		new ParticleType({
 			// red (heavy) particle
@@ -41,7 +41,7 @@ function createConfig() {
 			colorRed: 1,
 			colorGreen: 0,
 			colorBlue: 0,
-			mass: 3,
+			mass: 10,
 		}),
 	];
 

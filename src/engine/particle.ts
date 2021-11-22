@@ -4,13 +4,13 @@ import { Particle as ParticleInterface, ParticleId } from '../common/particle';
 import { Body } from './cluster/body';
 
 export const MIN_VELOCITY_PER_SECOND = 0.01;
-export const PUSHBACK_RATE = 0.6;
 export const COLLISION_PUSHBACK_SECONDS = 0.2;
 
 export class Particle implements ParticleInterface, Body {
 	public id: ParticleId;
 	public positionX: number;
 	public positionY: number;
+	public type: ParticleType;
 	public typeId: ParticleTypeId;
 	public radius: number;
 
@@ -29,6 +29,7 @@ export class Particle implements ParticleInterface, Body {
 		this.id = id;
 		this.positionX = positionX;
 		this.positionY = positionY;
+		this.type = type;
 		this.typeId = type.id;
 		this.radius = radius;
 	}
@@ -59,13 +60,14 @@ export class Particle implements ParticleInterface, Body {
 
 		// Projecting back and slowing down if there is existing velocity toward it
 		// Also transmitting the residual cynetic energy to the other particle
+		const pushbackRate = particle.type.mass / (this.type.mass + particle.type.mass);
 		if (Math.sign(this.velocityXPerSecond) == Math.sign(deltaX)) {
-			particle.velocityXPerSecond += this.velocityXPerSecond * (1 - PUSHBACK_RATE);
-			this.velocityXPerSecond = -(this.velocityXPerSecond * PUSHBACK_RATE);
+			particle.velocityXPerSecond += this.velocityXPerSecond * (1 - pushbackRate);
+			this.velocityXPerSecond = -(this.velocityXPerSecond * pushbackRate);
 		}
 		if (Math.sign(this.velocityYPerSecond) == Math.sign(deltaY)) {
-			particle.velocityYPerSecond += this.velocityYPerSecond * (1 - PUSHBACK_RATE);
-			this.velocityYPerSecond = -(this.velocityYPerSecond * PUSHBACK_RATE);
+			particle.velocityYPerSecond += this.velocityYPerSecond * (1 - pushbackRate);
+			this.velocityYPerSecond = -(this.velocityYPerSecond * pushbackRate);
 		}
 
 		const pushbackPerSecond = particle.radius / COLLISION_PUSHBACK_SECONDS;

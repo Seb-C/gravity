@@ -26,7 +26,6 @@ function init(config: Config) {
 
 	front.sendBuffers(sharedBuffers);
 
-	// TODO account for object mass when transmitting cynetic energy in case of collision
 	// TODO handle object gravity
 
 	front.onGetParticleIdsFromPosition((data) => {
