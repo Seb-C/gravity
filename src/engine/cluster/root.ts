@@ -110,12 +110,17 @@ export class Root {
 			const node = this.allNodes[i];
 			const hasMoved = node.particle.move(elapsedSeconds);
 
-			const collidedNodes = this.searchCollision(node.particle);
-			for (let j = 0; j < collidedNodes.length; j++) {
-				node.particle.updateFromCollision(collidedNodes[j].particle, elapsedSeconds);
+			const influences = this.searchInfluences(node.particle);
+			for (let j = 0; j < influences.length; j++) {
+				const influence = influences[j];
+				if (influence instanceof Node) {
+					node.particle.updateFromCollision(influence.particle, elapsedSeconds);
+				} else {
+					node.particle.applyGravitationalInfluence(influence, elapsedSeconds);
+				}
 			}
 
-			if (hasMoved || collidedNodes.length > 0) {
+			if (hasMoved || influences.length > 0) {
 				this.sharedData.set(i, node.particle);
 				this.removeFromTree(node);
 				this.addToTree(node);
@@ -124,10 +129,12 @@ export class Root {
 	}
 
 	/**
-	 * Searches in the tree if the given body collides with any other.
-	 * If it does, then the collided node will be returned.
+	 * Searches in the tree if the given body is being influenced by any other.
+	 * In the returned collection:
+	 * - A Node is returned if it collides with the given body
+	 * - A Cluster is returned if it's gravity influences the body
 	 */
-	public searchCollision(body: Body): Node[] {
+	public searchInfluences(body: Body): TreeAble[] {
 		if (this.root === null) {
 			return [];
 		}
@@ -141,30 +148,40 @@ export class Root {
 		}
 
 		const stack: Cluster[] = [this.root];
-		const collidingNodes: Node[] = [];
+		const influences: TreeAble[] = [];
 
 		let currentCluster: Cluster | undefined;
 		while (currentCluster = stack.pop()) {
 			const leftBody = currentCluster.left instanceof Node ? currentCluster.left.particle : currentCluster.left;
 			if (bodiesDoesCollide(leftBody, body)) {
 				if (currentCluster.left instanceof Node) {
-					collidingNodes.push(currentCluster.left);
+					influences.push(currentCluster.left);
 				} else {
 					stack.push(currentCluster.left);
+					if (currentCluster.left.doesGravityInfluences(body)) {
+						// TODO a cluster could influence a body without having a collision (gravitational influence radius > physical radius)
+						// TODO however this would not work with the current method
+						influences.push(currentCluster.left);
+					}
 				}
 			}
 
 			const rightBody = currentCluster.right instanceof Node ? currentCluster.right.particle : currentCluster.right;
 			if (bodiesDoesCollide(rightBody, body)) {
 				if (currentCluster.right instanceof Node) {
-					collidingNodes.push(currentCluster.right);
+					influences.push(currentCluster.right);
 				} else {
 					stack.push(currentCluster.right);
+					if (currentCluster.right.doesGravityInfluences(body)) {
+						// TODO a cluster could influence a body without having a collision (gravitational influence radius > physical radius)
+						// TODO however this would not work with the current method
+						influences.push(currentCluster.right);
+					}
 				}
 			}
 		}
 
-		return collidingNodes;
+		return influences;
 	}
 
 	public costOfAdding(node: Node, target: TreeAble): number {

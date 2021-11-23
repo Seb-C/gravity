@@ -26,11 +26,16 @@ function init(config: Config) {
 
 	front.sendBuffers(sharedBuffers);
 
-	// TODO handle object gravity
-
 	front.onGetParticleIdsFromPosition((data) => {
-		const nodes = rootCluster.searchCollision(data);
-		front.sendParticleIdsResponse(nodes.map(node => node.particle.id));
+		const influences = rootCluster.searchInfluences(data);
+		const particleIds = new Array<ParticleId>();
+		for (let i = 0; i < influences.length; i++) {
+			const influence = influences[i];
+			if (influence instanceof Node) {
+				particleIds.push(influence.particle.id);
+			}
+		}
+		front.sendParticleIdsResponse(particleIds);
 	});
 	front.onMoveParticle((id, positionX, positionY) => {
 		const particle = rootCluster.getParticleById(id);

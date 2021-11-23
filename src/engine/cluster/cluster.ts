@@ -1,6 +1,6 @@
 import { TreeAble } from './root';
 import { Node } from './node';
-import { Body, bodiesDistanceCenter } from './body';
+import { Body, bodiesDistanceCenter, bodiesDoesCollide } from './body';
 import { Particle } from '../particle';
 
 export class Cluster implements Body {
@@ -59,6 +59,12 @@ export class Cluster implements Body {
 		if (hasChanged) {
 			this.parentCluster?.updateProperties();
 		}
+	}
+
+	public doesGravityInfluences(body: Body): boolean {
+		// TODO the area of influence should depend on the mass, not radius
+		// TODO a cluster should only influence a body if it's density is high enough
+		return bodiesDoesCollide(this, body);
 	}
 
 	public static computeBoundaries(left: Body, right: Body) {

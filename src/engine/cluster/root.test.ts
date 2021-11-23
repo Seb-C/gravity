@@ -195,7 +195,7 @@ describe('Root', () => {
 			expect(rootCluster.root).toBeNull();
 		});
 	});
-	describe('searchCollision', () => {
+	describe('searchInfluences', () => {
 		const createTestTree = () => {
 			const sharedData = jasmine.createSpyObj('sharedData', ['set']);
 			const rootCluster = new Root(sharedData);
@@ -206,16 +206,28 @@ describe('Root', () => {
 
 			const clusterB = Cluster.createAndSetParents(nodeB, nodeC, null);
 			const clusterA = Cluster.createAndSetParents(clusterB, nodeA, null);
+			const clusterAGravityInfluenceSpy = global.spyOn(clusterA, 'doesGravityInfluences').and.callFake(() => false);
+			const clusterBGravityInfluenceSpy = global.spyOn(clusterB, 'doesGravityInfluences').and.callFake(() => false);
+
 			rootCluster.root = clusterA;
 
-			return { rootCluster, clusterA, clusterB, nodeA, nodeB, nodeC };
+			return {
+				rootCluster,
+				clusterA,
+				clusterB,
+				clusterAGravityInfluenceSpy,
+				clusterBGravityInfluenceSpy,
+				nodeA,
+				nodeB,
+				nodeC,
+			};
 		};
 		it('is root', () => {
 			const rootCluster = new Root(<any>{});
 			const particle = new Particle(<ParticleId>1, 0, 0, <any>{}, 1);
 			const node = new Node(particle);
 			rootCluster.root = node;
-			expect(rootCluster.searchCollision(particle).length).toBe(0);
+			expect(rootCluster.searchInfluences(particle).length).toBe(0);
 		});
 		it('root is node, collides', () => {
 			const rootCluster = new Root(<any>{});
@@ -223,7 +235,7 @@ describe('Root', () => {
 			rootCluster.root = existingNode;
 
 			const particle = new Particle(<ParticleId>1, 1, 1, <any>{}, 1);
-			expect(rootCluster.searchCollision(particle)).toEqual([existingNode]);
+			expect(rootCluster.searchInfluences(particle)).toEqual([existingNode]);
 		});
 		it('root is node, does not collides', () => {
 			const rootCluster = new Root(<any>{});
@@ -231,27 +243,42 @@ describe('Root', () => {
 			rootCluster.root = existingNode;
 
 			const particle = new Particle(<ParticleId>1, 1, 1, <any>{}, 1);
-			expect(rootCluster.searchCollision(particle)).toEqual([existingNode]);
+			expect(rootCluster.searchInfluences(particle)).toEqual([existingNode]);
 		});
 		it('collides with both', () => {
 			const { rootCluster, nodeB, nodeC } = createTestTree();
 			const particle = new Particle(<ParticleId>1, 0, 0, <any>{}, 1);
-			expect(rootCluster.searchCollision(particle)).toEqual([nodeB, nodeC]);
+			expect(rootCluster.searchInfluences(particle)).toEqual([nodeB, nodeC]);
 		});
 		it('collides with left only', () => {
 			const { rootCluster, nodeB } = createTestTree();
 			const particle = new Particle(<ParticleId>1, -7, 0, <any>{}, 1);
-			expect(rootCluster.searchCollision(particle)).toEqual([nodeB]);
+			expect(rootCluster.searchInfluences(particle)).toEqual([nodeB]);
 		});
 		it('collides with right only', () => {
 			const { rootCluster, nodeC } = createTestTree();
 			const particle = new Particle(<ParticleId>1, 7, 0, <any>{}, 1);
-			expect(rootCluster.searchCollision(particle)).toEqual([nodeC]);
+			expect(rootCluster.searchInfluences(particle)).toEqual([nodeC]);
 		});
 		it('collides with none', () => {
 			const { rootCluster } = createTestTree();
 			const particle = new Particle(<ParticleId>1, 0, -10, <any>{}, 1);
-			expect(rootCluster.searchCollision(particle).length).toBe(0);
+			expect(rootCluster.searchInfluences(particle).length).toBe(0);
+		});
+		it('influenced by the gravity of one cluster', () => {
+			const {
+				rootCluster,
+				clusterA,
+				clusterB,
+				clusterAGravityInfluenceSpy,
+				clusterBGravityInfluenceSpy,
+			} = createTestTree();
+			clusterAGravityInfluenceSpy.and.callFake(() => false);
+			clusterBGravityInfluenceSpy.and.callFake(() => true);
+			const particle = new Particle(<ParticleId>1, 0, -10, <any>{}, 1);
+			const influences = rootCluster.searchInfluences(particle);
+			expect(influences).not.toContain(clusterA);
+			expect(influences).toContain(clusterB);
 		});
 	});
 	describe('costOfAdding', () => {

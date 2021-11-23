@@ -2,6 +2,7 @@ import { ParticleType } from '../common/particle-type';
 import { ParticleTypeId } from '../common/particle-type';
 import { Particle as ParticleInterface, ParticleId } from '../common/particle';
 import { Body } from './cluster/body';
+import { Cluster } from './cluster/cluster';
 
 export const MIN_VELOCITY_PER_SECOND = 0.01;
 export const COLLISION_PUSHBACK_SECONDS = 0.2;
@@ -78,6 +79,11 @@ export class Particle implements ParticleInterface, Body {
 		this.positionY -= currentPushback > Math.abs(deltaY)
 			? deltaY
 			: currentPushback * Math.sign(deltaY);
+	}
+
+	public applyGravitationalInfluence(cluster: Cluster, elapsedSeconds: number) {
+		// TODO keep previous velocity + improve this depending on the mass of the cluster
+		this.setVelocityTowards(cluster, 10);
 	}
 
 	public setVelocityTowards(
