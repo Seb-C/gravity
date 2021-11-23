@@ -10,7 +10,7 @@ export class Particle implements ParticleInterface, Body {
 	public id: ParticleId;
 	public positionX: number;
 	public positionY: number;
-	public type: ParticleType;
+	public mass: number;
 	public typeId: ParticleTypeId;
 	public radius: number;
 
@@ -29,7 +29,7 @@ export class Particle implements ParticleInterface, Body {
 		this.id = id;
 		this.positionX = positionX;
 		this.positionY = positionY;
-		this.type = type;
+		this.mass = type.mass;
 		this.typeId = type.id;
 		this.radius = radius;
 	}
@@ -60,7 +60,7 @@ export class Particle implements ParticleInterface, Body {
 
 		// Projecting back and slowing down if there is existing velocity toward it
 		// Also transmitting the residual cynetic energy to the other particle
-		const pushbackRate = particle.type.mass / (this.type.mass + particle.type.mass);
+		const pushbackRate = particle.mass / (this.mass + particle.mass);
 		if (Math.sign(this.velocityXPerSecond) == Math.sign(deltaX)) {
 			particle.velocityXPerSecond += this.velocityXPerSecond * (1 - pushbackRate);
 			this.velocityXPerSecond = -(this.velocityXPerSecond * pushbackRate);

@@ -1,6 +1,7 @@
 import { TreeAble } from './root';
 import { Node } from './node';
 import { Body, bodiesDistanceCenter } from './body';
+import { Particle } from '../particle';
 
 export class Cluster implements Body {
 	public left: TreeAble;
@@ -10,6 +11,7 @@ export class Cluster implements Body {
 	public positionX: number;
 	public positionY: number;
 	public radius: number;
+	public mass: number;
 
 	constructor(left: TreeAble, right: TreeAble, parentCluster: Cluster | null) {
 		this.left = left;
@@ -19,8 +21,9 @@ export class Cluster implements Body {
 		this.positionX = NaN;
 		this.positionY = NaN;
 		this.radius = NaN;
+		this.mass = NaN;
 
-		this.updateBoundaries();
+		this.updateProperties();
 	}
 
 	public static createAndSetParents(
@@ -34,23 +37,27 @@ export class Cluster implements Body {
 		return cluster;
 	}
 
-	public updateBoundaries() {
-		const { positionX, positionY, radius } = Cluster.computeBoundaries(
-			this.left instanceof Node ? this.left.particle : this.left,
-			this.right instanceof Node ? this.right.particle : this.right,
-		);
+	public updateProperties() {
+		const left = this.left instanceof Node ? this.left.particle : this.left;
+		const right = this.right instanceof Node ? this.right.particle : this.right;
+
+		const { positionX, positionY, radius } = Cluster.computeBoundaries(left, right);
+		const mass = left.mass + right.mass;
+
 		const hasChanged = (
 			positionX != this.positionX
 			|| positionY != this.positionY
 			|| radius != this.radius
+			|| mass != this.mass
 		);
 
 		this.positionX = positionX;
 		this.positionY = positionY;
 		this.radius = radius;
+		this.mass = mass;
 
 		if (hasChanged) {
-			this.parentCluster?.updateBoundaries();
+			this.parentCluster?.updateProperties();
 		}
 	}
 
