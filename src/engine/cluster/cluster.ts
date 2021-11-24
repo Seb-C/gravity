@@ -1,7 +1,9 @@
 import { TreeAble } from './root';
 import { Node } from './node';
-import { Body, bodiesDistanceCenter, bodiesDoesCollide } from './body';
+import { Body, bodiesDistanceCenter } from './body';
 import { Particle } from '../particle';
+
+export const MIN_DENSITY_TO_HAVE_GRAVITY = 0.0035;
 
 export class Cluster implements Body {
 	public left: TreeAble;
@@ -62,9 +64,12 @@ export class Cluster implements Body {
 	}
 
 	public doesGravityInfluences(body: Body): boolean {
-		// TODO the area of influence should depend on the mass, not radius
-		// TODO a cluster should only influence a body if it's density is high enough
-		return bodiesDoesCollide(this, body);
+		// TODO unit test this method
+		const clusterArea = (Math.PI * this.radius * this.radius);
+		const clusterDensity = this.mass / clusterArea;
+
+		// TODO also add distance to the body as a criteria
+		return clusterDensity > MIN_DENSITY_TO_HAVE_GRAVITY;
 	}
 
 	public static computeBoundaries(left: Body, right: Body) {
