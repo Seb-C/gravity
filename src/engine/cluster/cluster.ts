@@ -3,7 +3,7 @@ import { Node } from './node';
 import { Body, bodiesDistanceCenter } from './body';
 import { Particle } from '../particle';
 
-export const MIN_DENSITY_TO_HAVE_GRAVITY = 0.0035;
+export const MIN_DENSITY_TO_HAVE_GRAVITY = 0.05;
 
 export class Cluster implements Body {
 	public left: TreeAble;

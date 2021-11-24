@@ -6,6 +6,7 @@ import { Cluster } from './cluster/cluster';
 
 export const MIN_VELOCITY_PER_SECOND = 0.01;
 export const COLLISION_PUSHBACK_SECONDS = 0.2;
+export const COLLISION_ENERGY_WASTE_RATE = 0.2;
 export const GRAVITY_VELOCITY_PER_SECOND = 300;
 
 export class Particle implements ParticleInterface, Body {
@@ -65,11 +66,11 @@ export class Particle implements ParticleInterface, Body {
 		const pushbackRate = particle.mass / (this.mass + particle.mass);
 		if (Math.sign(this.velocityXPerSecond) == Math.sign(deltaX)) {
 			particle.velocityXPerSecond += this.velocityXPerSecond * (1 - pushbackRate);
-			this.velocityXPerSecond = -(this.velocityXPerSecond * pushbackRate);
+			this.velocityXPerSecond = -(this.velocityXPerSecond * pushbackRate) * (1 - COLLISION_ENERGY_WASTE_RATE);
 		}
 		if (Math.sign(this.velocityYPerSecond) == Math.sign(deltaY)) {
 			particle.velocityYPerSecond += this.velocityYPerSecond * (1 - pushbackRate);
-			this.velocityYPerSecond = -(this.velocityYPerSecond * pushbackRate);
+			this.velocityYPerSecond = -(this.velocityYPerSecond * pushbackRate) * (1 - COLLISION_ENERGY_WASTE_RATE);
 		}
 
 		const pushbackPerSecond = particle.radius / COLLISION_PUSHBACK_SECONDS;
